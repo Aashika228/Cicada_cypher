@@ -50,6 +50,7 @@ const Navbar = ({ onStartAudit, onLoginClick, onSignupClick }) => {
               </SignUpButton>
             </SignedOut>
             <SignedIn>
+              <a href="/dashboard" className="btn btn--ghost" style={{textDecoration: 'none'}}>Dashboard</a>
               <UserButton />
             </SignedIn>
           </div>

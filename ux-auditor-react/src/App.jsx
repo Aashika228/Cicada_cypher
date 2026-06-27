@@ -60,7 +60,18 @@ function App() {
       <div className="bg-glow bg-glow--3"></div>
 
       <SignedIn>
-        <Dashboard />
+        {window.location.pathname.startsWith('/dashboard') ? (
+          <Dashboard />
+        ) : (
+          <>
+            <Navbar onStartAudit={() => handleStartAudit()} />
+            <Hero onStartAudit={handleStartAudit} />
+            <Features />
+            <Engines />
+            <WorkflowJourneys />
+            <BottomSections />
+          </>
+        )}
       </SignedIn>
       
       <SignedOut>

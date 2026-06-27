@@ -3,6 +3,7 @@ import express from 'express';
 import cors from 'cors';
 import mongoose from 'mongoose';
 import repoAuditRoutes from './routes/repoAudit.js';
+import repoPushRoutes from './routes/repoPush.js';
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -15,6 +16,7 @@ app.get('/api/health', (_req, res) => {
 });
 
 app.use('/api/repo', repoAuditRoutes);
+app.use('/api/repo', repoPushRoutes);
 
 async function start() {
   const mongoUri = process.env.MONGODB_URI || 'mongodb://localhost:27017/reposcan';
