@@ -1,0 +1,853 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Conversational UX Auditor — AI-Powered Website Accessibility & Usability Analysis</title>
+  <meta name="description" content="Enter any website URL and get a complete AI-powered UX and Accessibility audit with WCAG validation, heuristic evaluation, journey simulation, and auto-generated fixes." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="index.css" />
+</head>
+<body>
+  <!-- Animated background -->
+  <div class="bg-grid" id="bgGrid"></div>
+  <div class="bg-glow bg-glow--1"></div>
+  <div class="bg-glow bg-glow--2"></div>
+  <div class="bg-glow bg-glow--3"></div>
+
+  <!-- Navigation -->
+  <nav class="nav" id="nav">
+    <div class="nav__inner">
+      <a href="#" class="nav__logo">
+        <div class="nav__logo-icon">
+          <svg viewBox="0 0 32 32" fill="none">
+            <rect x="2" y="2" width="28" height="28" rx="8" stroke="url(#logoGrad)" stroke-width="2.5"/>
+            <path d="M10 16.5L14 20.5L22 12.5" stroke="url(#logoGrad)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="24" cy="8" r="3" fill="#a78bfa"/>
+            <defs>
+              <linearGradient id="logoGrad" x1="0" y1="0" x2="32" y2="32">
+                <stop stop-color="#818cf8"/>
+                <stop offset="1" stop-color="#c084fc"/>
+              </linearGradient>
+            </defs>
+          </svg>
+        </div>
+        <span class="nav__logo-text">UX Auditor</span>
+      </a>
+      <div class="nav__links">
+        <a href="#features" class="nav__link">Features</a>
+        <a href="#engines" class="nav__link">Engines</a>
+        <a href="#workflow" class="nav__link">Workflow</a>
+        <a href="#journeys" class="nav__link">Journeys</a>
+        <a href="#dashboard" class="nav__link">Dashboard</a>
+      </div>
+      <div class="nav__actions">
+        <button class="btn btn--ghost" id="btnLogin">Sign In</button>
+        <button class="btn btn--primary" id="btnStart">Start Audit</button>
+      </div>
+      <button class="nav__hamburger" id="hamburger" aria-label="Toggle menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- Mobile nav -->
+  <div class="mobile-nav" id="mobileNav">
+    <a href="#features" class="mobile-nav__link">Features</a>
+    <a href="#engines" class="mobile-nav__link">Engines</a>
+    <a href="#workflow" class="mobile-nav__link">Workflow</a>
+    <a href="#journeys" class="mobile-nav__link">Journeys</a>
+    <a href="#dashboard" class="mobile-nav__link">Dashboard</a>
+    <div class="mobile-nav__actions">
+      <button class="btn btn--ghost">Sign In</button>
+      <button class="btn btn--primary">Start Audit</button>
+    </div>
+  </div>
+
+  <!-- Hero Section -->
+  <header class="hero" id="hero">
+    <div class="hero__badge animate-in">
+      <span class="hero__badge-dot"></span>
+      AI-Powered UX Intelligence Platform
+    </div>
+    <h1 class="hero__title animate-in">
+      Audit Any Website's<br/>
+      <span class="hero__title-gradient">UX & Accessibility</span><br/>
+      In Seconds
+    </h1>
+    <p class="hero__subtitle animate-in">
+      Enter a URL and let our AI engines automatically analyze WCAG compliance,
+      usability heuristics, and real user journeys — then generate verified fixes instantly.
+    </p>
+
+    <!-- URL Input -->
+    <div class="hero__input-wrap animate-in">
+      <div class="hero__input-container" id="urlInputContainer">
+        <div class="hero__input-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+          </svg>
+        </div>
+        <input
+          type="url"
+          class="hero__input"
+          id="urlInput"
+          placeholder="Enter your website"
+          autocomplete="off"
+        />
+        <button class="hero__input-btn" id="auditBtn">
+          <span>Get insights</span>
+        </button>
+      </div>
+      <div class="hero__input-suggestions">
+        <span class="hero__suggestion" data-url="https://example.com">example.com</span>
+        <span class="hero__suggestion" data-url="https://github.com">github.com</span>
+        <span class="hero__suggestion" data-url="https://stripe.com">stripe.com</span>
+      </div>
+    </div>
+
+    <!-- Trust stats -->
+    <div class="hero__stats animate-in">
+      <div class="hero__stat">
+        <span class="hero__stat-number" data-count="0">0</span>
+        <span class="hero__stat-label">Sites Audited</span>
+      </div>
+      <div class="hero__stat-divider"></div>
+      <div class="hero__stat">
+        <span class="hero__stat-number" data-count="0">0</span>
+        <span class="hero__stat-label">Issues Found</span>
+      </div>
+      <div class="hero__stat-divider"></div>
+      <div class="hero__stat">
+        <span class="hero__stat-number" data-count="0">0</span>
+        <span class="hero__stat-label">Fixes Generated</span>
+      </div>
+      <div class="hero__stat-divider"></div>
+      <div class="hero__stat">
+        <span class="hero__stat-number" data-count="0">0</span>
+        <span class="hero__stat-label">% Accuracy</span>
+      </div>
+    </div>
+
+    <!-- Floating dashboard mockup -->
+    <div class="hero__preview animate-in">
+      <div class="hero__preview-window">
+        <div class="preview-bar">
+          <span class="preview-dot preview-dot--red"></span>
+          <span class="preview-dot preview-dot--yellow"></span>
+          <span class="preview-dot preview-dot--green"></span>
+          <span class="preview-bar__url">uxauditor.ai/dashboard</span>
+        </div>
+        <div class="preview-body">
+          <!-- Score cards row -->
+          <div class="preview-scores">
+            <div class="preview-score-card">
+              <svg class="preview-ring" viewBox="0 0 80 80">
+                <circle cx="40" cy="40" r="34" stroke="rgba(129,140,248,0.15)" stroke-width="6" fill="none"/>
+                <circle cx="40" cy="40" r="34" stroke="url(#ring1)" stroke-width="6" fill="none" stroke-dasharray="170 214" stroke-linecap="round" class="preview-ring__fill"/>
+                <defs><linearGradient id="ring1" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#818cf8"/><stop offset="1" stop-color="#c084fc"/></linearGradient></defs>
+              </svg>
+              <span class="preview-score-value">79</span>
+              <span class="preview-score-label">Overall</span>
+            </div>
+            <div class="preview-score-card">
+              <svg class="preview-ring" viewBox="0 0 80 80">
+                <circle cx="40" cy="40" r="34" stroke="rgba(52,211,153,0.15)" stroke-width="6" fill="none"/>
+                <circle cx="40" cy="40" r="34" stroke="#34d399" stroke-width="6" fill="none" stroke-dasharray="185 214" stroke-linecap="round" class="preview-ring__fill"/>
+              </svg>
+              <span class="preview-score-value" style="color:#34d399">86</span>
+              <span class="preview-score-label">Accessibility</span>
+            </div>
+            <div class="preview-score-card">
+              <svg class="preview-ring" viewBox="0 0 80 80">
+                <circle cx="40" cy="40" r="34" stroke="rgba(251,191,36,0.15)" stroke-width="6" fill="none"/>
+                <circle cx="40" cy="40" r="34" stroke="#fbbf24" stroke-width="6" fill="none" stroke-dasharray="155 214" stroke-linecap="round" class="preview-ring__fill"/>
+              </svg>
+              <span class="preview-score-value" style="color:#fbbf24">72</span>
+              <span class="preview-score-label">Usability</span>
+            </div>
+            <div class="preview-score-card">
+              <svg class="preview-ring" viewBox="0 0 80 80">
+                <circle cx="40" cy="40" r="34" stroke="rgba(248,113,113,0.15)" stroke-width="6" fill="none"/>
+                <circle cx="40" cy="40" r="34" stroke="#f87171" stroke-width="6" fill="none" stroke-dasharray="140 214" stroke-linecap="round" class="preview-ring__fill"/>
+              </svg>
+              <span class="preview-score-value" style="color:#f87171">65</span>
+              <span class="preview-score-label">Journeys</span>
+            </div>
+          </div>
+          <!-- Charts row -->
+          <div class="preview-charts">
+            <div class="preview-chart-card">
+              <div class="preview-chart-title">Issues by Severity</div>
+              <div class="preview-bars">
+                <div class="preview-bar-item">
+                  <span class="preview-bar-label">Critical</span>
+                  <div class="preview-bar-track"><div class="preview-bar-fill preview-bar-fill--critical" style="width:25%"></div></div>
+                  <span class="preview-bar-val">3</span>
+                </div>
+                <div class="preview-bar-item">
+                  <span class="preview-bar-label">High</span>
+                  <div class="preview-bar-track"><div class="preview-bar-fill preview-bar-fill--high" style="width:50%"></div></div>
+                  <span class="preview-bar-val">7</span>
+                </div>
+                <div class="preview-bar-item">
+                  <span class="preview-bar-label">Medium</span>
+                  <div class="preview-bar-track"><div class="preview-bar-fill preview-bar-fill--medium" style="width:75%"></div></div>
+                  <span class="preview-bar-val">12</span>
+                </div>
+                <div class="preview-bar-item">
+                  <span class="preview-bar-label">Low</span>
+                  <div class="preview-bar-track"><div class="preview-bar-fill preview-bar-fill--low" style="width:40%"></div></div>
+                  <span class="preview-bar-val">5</span>
+                </div>
+              </div>
+            </div>
+            <div class="preview-chart-card">
+              <div class="preview-chart-title">Heuristic Radar</div>
+              <div class="preview-radar">
+                <svg viewBox="0 0 200 200" class="preview-radar-svg">
+                  <!-- Radar background web -->
+                  <polygon points="100,20 170,55 170,145 100,180 30,145 30,55" fill="none" stroke="rgba(0,0,0,0.05)" stroke-width="1.5"/>
+                  <polygon points="100,45 155,70 155,130 100,155 45,130 45,70" fill="none" stroke="rgba(0,0,0,0.05)" stroke-width="1"/>
+                  <polygon points="100,70 135,85 135,115 100,130 65,115 65,85" fill="none" stroke="rgba(0,0,0,0.05)" stroke-width="1"/>
+                  <!-- Cross lines -->
+                  <line x1="100" y1="20" x2="100" y2="180" stroke="rgba(0,0,0,0.05)" stroke-width="1"/>
+                  <line x1="30" y1="55" x2="170" y2="145" stroke="rgba(0,0,0,0.05)" stroke-width="1"/>
+                  <line x1="30" y1="145" x2="170" y2="55" stroke="rgba(0,0,0,0.05)" stroke-width="1"/>
+                  
+                  <!-- Radar Area Gradient -->
+                  <defs>
+                    <linearGradient id="radarGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stop-color="rgba(168, 85, 247, 0.4)"/>
+                      <stop offset="100%" stop-color="rgba(99, 102, 241, 0.2)"/>
+                    </linearGradient>
+                  </defs>
+                  
+                  <polygon points="100,30 160,60 150,140 100,170 40,135 50,55" fill="url(#radarGrad)" stroke="#a855f7" stroke-width="2.5" stroke-linejoin="round"/>
+                  
+                  <!-- Dots -->
+                  <circle cx="100" cy="30" r="4.5" fill="#fff" stroke="#a855f7" stroke-width="2.5"/>
+                  <circle cx="160" cy="60" r="4.5" fill="#fff" stroke="#a855f7" stroke-width="2.5"/>
+                  <circle cx="150" cy="140" r="4.5" fill="#fff" stroke="#a855f7" stroke-width="2.5"/>
+                  <circle cx="100" cy="170" r="4.5" fill="#fff" stroke="#a855f7" stroke-width="2.5"/>
+                  <circle cx="40" cy="135" r="4.5" fill="#fff" stroke="#a855f7" stroke-width="2.5"/>
+                  <circle cx="50" cy="55" r="4.5" fill="#fff" stroke="#a855f7" stroke-width="2.5"/>
+                </svg>
+              </div>
+            </div>
+          </div>
+          <!-- Extra Charts row: Heatmap & Trend -->
+          <div class="preview-charts preview-extra-charts">
+            <div class="preview-chart-card">
+              <div class="preview-chart-title">Click Heatmap</div>
+              <div class="preview-heatmap">
+                <div class="preview-heatmap-grid">
+                  <div class="heat-cell heat-low"></div><div class="heat-cell heat-low"></div><div class="heat-cell heat-med"></div><div class="heat-cell heat-low"></div><div class="heat-cell heat-none"></div>
+                  <div class="heat-cell heat-none"></div><div class="heat-cell heat-low"></div><div class="heat-cell heat-high"></div><div class="heat-cell heat-med"></div><div class="heat-cell heat-low"></div>
+                  <div class="heat-cell heat-low"></div><div class="heat-cell heat-med"></div><div class="heat-cell heat-max"></div><div class="heat-cell heat-high"></div><div class="heat-cell heat-med"></div>
+                  <div class="heat-cell heat-none"></div><div class="heat-cell heat-low"></div><div class="heat-cell heat-med"></div><div class="heat-cell heat-low"></div><div class="heat-cell heat-none"></div>
+                </div>
+              </div>
+            </div>
+            <div class="preview-chart-card">
+              <div class="preview-chart-title">Accessibility Trend</div>
+              <div class="preview-trend">
+                <svg viewBox="0 0 200 100" class="preview-trend-svg" preserveAspectRatio="none">
+                  <!-- Grid lines -->
+                  <line x1="0" y1="25" x2="200" y2="25" stroke="rgba(0,0,0,0.05)" stroke-width="1" stroke-dasharray="4 4"/>
+                  <line x1="0" y1="50" x2="200" y2="50" stroke="rgba(0,0,0,0.05)" stroke-width="1" stroke-dasharray="4 4"/>
+                  <line x1="0" y1="75" x2="200" y2="75" stroke="rgba(0,0,0,0.05)" stroke-width="1" stroke-dasharray="4 4"/>
+                  
+                  <!-- Area Gradient -->
+                  <defs>
+                    <linearGradient id="trendGrad" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stop-color="rgba(168, 85, 247, 0.3)"/>
+                      <stop offset="100%" stop-color="rgba(168, 85, 247, 0)"/>
+                    </linearGradient>
+                  </defs>
+                  
+                  <!-- Area -->
+                  <path d="M0,80 L40,60 L80,70 L120,40 L160,30 L200,10 L200,100 L0,100 Z" fill="url(#trendGrad)" />
+                  <!-- Line -->
+                  <path d="M0,80 L40,60 L80,70 L120,40 L160,30 L200,10" fill="none" stroke="#a855f7" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                  
+                  <!-- Points -->
+                  <circle cx="40" cy="60" r="4.5" fill="#fff" stroke="#a855f7" stroke-width="2.5"/>
+                  <circle cx="80" cy="70" r="4.5" fill="#fff" stroke="#a855f7" stroke-width="2.5"/>
+                  <circle cx="120" cy="40" r="4.5" fill="#fff" stroke="#a855f7" stroke-width="2.5"/>
+                  <circle cx="160" cy="30" r="4.5" fill="#fff" stroke="#a855f7" stroke-width="2.5"/>
+                  <circle cx="200" cy="10" r="4.5" fill="#fff" stroke="#a855f7" stroke-width="2.5"/>
+                </svg>
+              </div>
+            </div>
+          </div>
+          <!-- Issue row -->
+          <div class="preview-issues">
+            <div class="preview-issue">
+              <span class="preview-issue-badge preview-issue-badge--critical">Critical</span>
+              <span class="preview-issue-text">Missing alt text on 4 images</span>
+              <span class="preview-issue-fix">✨ Fix Available</span>
+            </div>
+            <div class="preview-issue">
+              <span class="preview-issue-badge preview-issue-badge--high">High</span>
+              <span class="preview-issue-text">Color contrast ratio 2.8:1 on CTA</span>
+              <span class="preview-issue-fix">✨ Fix Available</span>
+            </div>
+            <div class="preview-issue">
+              <span class="preview-issue-badge preview-issue-badge--medium">Medium</span>
+              <span class="preview-issue-text">Heading hierarchy skips h3</span>
+              <span class="preview-issue-fix verified">✓ Verified</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Features Section -->
+  <section class="features" id="features">
+    <div class="section__container">
+      <div class="section__header animate-in">
+        <span class="section__overline">Capabilities</span>
+        <h2 class="section__title">Everything You Need to<br/><span class="text-gradient">Perfect Your UX</span></h2>
+        <p class="section__desc">A comprehensive AI-powered platform that goes beyond basic accessibility checks to deliver actionable, verified improvements.</p>
+      </div>
+      <div class="features__grid">
+        <!-- Feature 1 -->
+        <div class="feature-card animate-in">
+          <div class="feature-card__icon feature-card__icon--indigo">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/>
+            </svg>
+          </div>
+          <h3 class="feature-card__title">Browser Automation</h3>
+          <p class="feature-card__desc">Playwright opens your site like a real user — captures screenshots, extracts DOM, HTML, CSS, forms, buttons, images, navigation, and more.</p>
+        </div>
+        <!-- Feature 2 -->
+        <div class="feature-card animate-in">
+          <div class="feature-card__icon feature-card__icon--emerald">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+            </svg>
+          </div>
+          <h3 class="feature-card__title">WCAG Validation</h3>
+          <p class="feature-card__desc">Deep accessibility analysis checking alt text, contrast ratios, heading hierarchy, form labels, ARIA attributes, keyboard nav, and focus indicators.</p>
+        </div>
+        <!-- Feature 3 -->
+        <div class="feature-card animate-in">
+          <div class="feature-card__icon feature-card__icon--amber">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+            </svg>
+          </div>
+          <h3 class="feature-card__title">Heuristic Evaluation</h3>
+          <p class="feature-card__desc">Nielsen's 10 usability heuristics applied automatically — navigation clarity, consistency, error prevention, visual hierarchy, and more.</p>
+        </div>
+        <!-- Feature 4 -->
+        <div class="feature-card animate-in">
+          <div class="feature-card__icon feature-card__icon--rose">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+            </svg>
+          </div>
+          <h3 class="feature-card__title">Journey Simulation</h3>
+          <p class="feature-card__desc">Simulates real user flows — browsing, pricing, signup, login, support, checkout — identifying friction points and abandonment risks.</p>
+        </div>
+        <!-- Feature 5 -->
+        <div class="feature-card animate-in">
+          <div class="feature-card__icon feature-card__icon--cyan">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+            </svg>
+          </div>
+          <h3 class="feature-card__title">AI Fix Generation</h3>
+          <p class="feature-card__desc">Generates production-ready HTML & CSS fixes with clear explanations. Every fix is deployable — not just advice, but actual code.</p>
+        </div>
+        <!-- Feature 6 -->
+        <div class="feature-card animate-in">
+          <div class="feature-card__icon feature-card__icon--violet">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+            </svg>
+          </div>
+          <h3 class="feature-card__title">Auto-Verification</h3>
+          <p class="feature-card__desc">Every generated fix is re-validated by WCAG and Heuristic engines automatically. Only verified fixes earn the "Verified" badge.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Dual Engine Section -->
+  <section class="engines" id="engines">
+    <div class="section__container">
+      <div class="section__header animate-in">
+        <span class="section__overline">Dual-Engine Analysis</span>
+        <h2 class="section__title">Two Independent Engines.<br/><span class="text-gradient">Zero Blind Spots.</span></h2>
+        <p class="section__desc">Your website is analyzed by two specialized engines simultaneously, ensuring comprehensive coverage of both technical compliance and real-world usability.</p>
+      </div>
+      <div class="engines__grid">
+        <!-- WCAG Engine -->
+        <div class="engine-card animate-in">
+          <div class="engine-card__header">
+            <div class="engine-card__icon engine-card__icon--accessibility">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/><path d="M12 8v4l2 2"/>
+              </svg>
+            </div>
+            <div>
+              <h3 class="engine-card__title">WCAG Accessibility Engine</h3>
+              <span class="engine-card__tag">Standards-Based Validation</span>
+            </div>
+          </div>
+          <ul class="engine-card__list">
+            <li class="engine-card__item">
+              <span class="engine-card__check">✓</span>
+              <span>Image alt text detection</span>
+            </li>
+            <li class="engine-card__item">
+              <span class="engine-card__check">✓</span>
+              <span>Color contrast ratio (AA/AAA)</span>
+            </li>
+            <li class="engine-card__item">
+              <span class="engine-card__check">✓</span>
+              <span>Heading hierarchy validation</span>
+            </li>
+            <li class="engine-card__item">
+              <span class="engine-card__check">✓</span>
+              <span>Form label associations</span>
+            </li>
+            <li class="engine-card__item">
+              <span class="engine-card__check">✓</span>
+              <span>Keyboard accessibility</span>
+            </li>
+            <li class="engine-card__item">
+              <span class="engine-card__check">✓</span>
+              <span>Touch target sizes (≥44px)</span>
+            </li>
+            <li class="engine-card__item">
+              <span class="engine-card__check">✓</span>
+              <span>Semantic HTML usage</span>
+            </li>
+            <li class="engine-card__item">
+              <span class="engine-card__check">✓</span>
+              <span>ARIA attributes validation</span>
+            </li>
+            <li class="engine-card__item">
+              <span class="engine-card__check">✓</span>
+              <span>Page language declaration</span>
+            </li>
+            <li class="engine-card__item">
+              <span class="engine-card__check">✓</span>
+              <span>Focus indicators</span>
+            </li>
+          </ul>
+        </div>
+        <!-- Heuristic Engine -->
+        <div class="engine-card animate-in">
+          <div class="engine-card__header">
+            <div class="engine-card__icon engine-card__icon--heuristic">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+              </svg>
+            </div>
+            <div>
+              <h3 class="engine-card__title">UX Heuristic Engine</h3>
+              <span class="engine-card__tag">Nielsen's 10 Heuristics</span>
+            </div>
+          </div>
+          <ul class="engine-card__list">
+            <li class="engine-card__item">
+              <span class="engine-card__check engine-card__check--amber">✓</span>
+              <span>Navigation clarity</span>
+            </li>
+            <li class="engine-card__item">
+              <span class="engine-card__check engine-card__check--amber">✓</span>
+              <span>Visibility of system status</span>
+            </li>
+            <li class="engine-card__item">
+              <span class="engine-card__check engine-card__check--amber">✓</span>
+              <span>Error prevention & recovery</span>
+            </li>
+            <li class="engine-card__item">
+              <span class="engine-card__check engine-card__check--amber">✓</span>
+              <span>User control & freedom</span>
+            </li>
+            <li class="engine-card__item">
+              <span class="engine-card__check engine-card__check--amber">✓</span>
+              <span>Interface consistency</span>
+            </li>
+            <li class="engine-card__item">
+              <span class="engine-card__check engine-card__check--amber">✓</span>
+              <span>Recognition over recall</span>
+            </li>
+            <li class="engine-card__item">
+              <span class="engine-card__check engine-card__check--amber">✓</span>
+              <span>Visual hierarchy analysis</span>
+            </li>
+            <li class="engine-card__item">
+              <span class="engine-card__check engine-card__check--amber">✓</span>
+              <span>Form complexity scoring</span>
+            </li>
+            <li class="engine-card__item">
+              <span class="engine-card__check engine-card__check--amber">✓</span>
+              <span>CTA visibility & placement</span>
+            </li>
+            <li class="engine-card__item">
+              <span class="engine-card__check engine-card__check--amber">✓</span>
+              <span>Feedback & help systems</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Workflow Pipeline Section -->
+  <section class="workflow" id="workflow">
+    <div class="section__container">
+      <div class="section__header animate-in">
+        <span class="section__overline">End-to-End Pipeline</span>
+        <h2 class="section__title">From URL to <span class="text-gradient">Verified Fixes</span></h2>
+        <p class="section__desc">A fully automated pipeline that scans, analyzes, scores, fixes, and verifies — all without manual effort.</p>
+      </div>
+      <div class="workflow__pipeline animate-in">
+        <div class="workflow__step" data-step="1">
+          <div class="workflow__step-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+          </div>
+          <span class="workflow__step-label">Enter URL</span>
+        </div>
+        <div class="workflow__connector"><div class="workflow__connector-line"></div></div>
+        <div class="workflow__step" data-step="2">
+          <div class="workflow__step-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+          </div>
+          <span class="workflow__step-label">Browser Scan</span>
+        </div>
+        <div class="workflow__connector"><div class="workflow__connector-line"></div></div>
+        <div class="workflow__step" data-step="3">
+          <div class="workflow__step-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+          </div>
+          <span class="workflow__step-label">Data Extract</span>
+        </div>
+        <div class="workflow__connector"><div class="workflow__connector-line"></div></div>
+        <div class="workflow__step" data-step="4">
+          <div class="workflow__step-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+          </div>
+          <span class="workflow__step-label">WCAG + UX</span>
+        </div>
+        <div class="workflow__connector"><div class="workflow__connector-line"></div></div>
+        <div class="workflow__step" data-step="5">
+          <div class="workflow__step-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          </div>
+          <span class="workflow__step-label">Journeys</span>
+        </div>
+        <div class="workflow__connector"><div class="workflow__connector-line"></div></div>
+        <div class="workflow__step" data-step="6">
+          <div class="workflow__step-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+          </div>
+          <span class="workflow__step-label">AI Fixes</span>
+        </div>
+        <div class="workflow__connector"><div class="workflow__connector-line"></div></div>
+        <div class="workflow__step" data-step="7">
+          <div class="workflow__step-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          </div>
+          <span class="workflow__step-label">Verified</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Journey Simulation Section -->
+  <section class="journeys" id="journeys">
+    <div class="section__container">
+      <div class="section__header animate-in">
+        <span class="section__overline">User Journey Simulation</span>
+        <h2 class="section__title">Simulate <span class="text-gradient">Real User Flows</span></h2>
+        <p class="section__desc">Our engine simulates 6 critical user journeys to identify friction points, abandonment risks, and usability bottlenecks.</p>
+      </div>
+      <div class="journeys__grid">
+        <div class="journey-card animate-in">
+          <div class="journey-card__icon">🏠</div>
+          <h4 class="journey-card__title">Homepage Browsing</h4>
+          <p class="journey-card__desc">First impressions, load time, visual hierarchy, CTA visibility, and content discoverability.</p>
+          <div class="journey-card__meter">
+            <div class="journey-card__meter-fill" style="width:85%"></div>
+          </div>
+          <span class="journey-card__score">85/100</span>
+        </div>
+        <div class="journey-card animate-in">
+          <div class="journey-card__icon">💰</div>
+          <h4 class="journey-card__title">Finding Pricing</h4>
+          <p class="journey-card__desc">Navigation path to pricing, clarity of plans, comparison ease, and hidden costs.</p>
+          <div class="journey-card__meter">
+            <div class="journey-card__meter-fill journey-card__meter-fill--amber" style="width:68%"></div>
+          </div>
+          <span class="journey-card__score">68/100</span>
+        </div>
+        <div class="journey-card animate-in">
+          <div class="journey-card__icon">📝</div>
+          <h4 class="journey-card__title">Signing Up</h4>
+          <p class="journey-card__desc">Form complexity, field validation, error messaging, social login options, and completion rate.</p>
+          <div class="journey-card__meter">
+            <div class="journey-card__meter-fill" style="width:78%"></div>
+          </div>
+          <span class="journey-card__score">78/100</span>
+        </div>
+        <div class="journey-card animate-in">
+          <div class="journey-card__icon">🔑</div>
+          <h4 class="journey-card__title">Logging In</h4>
+          <p class="journey-card__desc">Login form accessibility, password recovery flow, session handling, and MFA experience.</p>
+          <div class="journey-card__meter">
+            <div class="journey-card__meter-fill" style="width:90%"></div>
+          </div>
+          <span class="journey-card__score">90/100</span>
+        </div>
+        <div class="journey-card animate-in">
+          <div class="journey-card__icon">💬</div>
+          <h4 class="journey-card__title">Contact Support</h4>
+          <p class="journey-card__desc">Support page findability, contact methods, response expectations, and help documentation.</p>
+          <div class="journey-card__meter">
+            <div class="journey-card__meter-fill journey-card__meter-fill--rose" style="width:52%"></div>
+          </div>
+          <span class="journey-card__score">52/100</span>
+        </div>
+        <div class="journey-card animate-in">
+          <div class="journey-card__icon">🛒</div>
+          <h4 class="journey-card__title">Checkout Flow</h4>
+          <p class="journey-card__desc">Cart experience, payment form, trust indicators, error handling, and confirmation clarity.</p>
+          <div class="journey-card__meter">
+            <div class="journey-card__meter-fill journey-card__meter-fill--amber" style="width:61%"></div>
+          </div>
+          <span class="journey-card__score">61/100</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Dashboard Preview Section -->
+  <section class="dashboard-section" id="dashboard">
+    <div class="section__container">
+      <div class="section__header animate-in">
+        <span class="section__overline">Interactive Dashboard</span>
+        <h2 class="section__title">Everything In One<br/><span class="text-gradient">Beautiful Dashboard</span></h2>
+        <p class="section__desc">Scores, reports, annotated screenshots, before/after comparisons, AI fixes, verification badges, interactive charts, and downloadable reports — all in one place.</p>
+      </div>
+      <div class="dashboard-features animate-in">
+        <div class="dashboard-feature">
+          <div class="dashboard-feature__icon">📊</div>
+          <span>Interactive Charts</span>
+        </div>
+        <div class="dashboard-feature">
+          <div class="dashboard-feature__icon">📸</div>
+          <span>Annotated Screenshots</span>
+        </div>
+        <div class="dashboard-feature">
+          <div class="dashboard-feature__icon">🔀</div>
+          <span>Before vs After</span>
+        </div>
+        <div class="dashboard-feature">
+          <div class="dashboard-feature__icon">🤖</div>
+          <span>AI-Generated Fixes</span>
+        </div>
+        <div class="dashboard-feature">
+          <div class="dashboard-feature__icon">✅</div>
+          <span>Verified Badges</span>
+        </div>
+        <div class="dashboard-feature">
+          <div class="dashboard-feature__icon">📥</div>
+          <span>PDF Reports</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- AI Chat Section -->
+  <section class="chat-section" id="chat">
+    <div class="section__container">
+      <div class="section__header animate-in">
+        <span class="section__overline">AI Chat Assistant</span>
+        <h2 class="section__title">Ask Anything About<br/><span class="text-gradient">Your Audit Results</span></h2>
+        <p class="section__desc">An integrated conversational AI that understands your audit context and can explain issues, suggest improvements, and generate code fixes on demand.</p>
+      </div>
+      <div class="chat-demo animate-in">
+        <div class="chat-demo__window">
+          <div class="chat-demo__header">
+            <div class="chat-demo__header-dot"></div>
+            <span>UX Auditor AI Assistant</span>
+          </div>
+          <div class="chat-demo__messages" id="chatMessages">
+            <div class="chat-msg chat-msg--ai">
+              <div class="chat-msg__avatar">AI</div>
+              <div class="chat-msg__bubble">Hi! I've analyzed your audit results. I found <strong>27 issues</strong> across accessibility, usability, and user journeys. How can I help you understand or fix them?</div>
+            </div>
+            <div class="chat-msg chat-msg--user">
+              <div class="chat-msg__bubble">Why is color contrast important?</div>
+            </div>
+            <div class="chat-msg chat-msg--ai">
+              <div class="chat-msg__avatar">AI</div>
+              <div class="chat-msg__bubble">Color contrast ensures text is readable for everyone, including people with low vision or color blindness. WCAG requires a <strong>minimum 4.5:1 ratio</strong> for normal text and <strong>3:1 for large text</strong>. Your CTA button currently has a 2.8:1 ratio — here's the fix:</div>
+            </div>
+            <div class="chat-msg chat-msg--ai">
+              <div class="chat-msg__avatar">AI</div>
+              <div class="chat-msg__bubble chat-msg__bubble--code">
+                <code>/* Before */
+.cta-btn { color: #999; background: #f0f0f0; }
+
+/* After — Ratio: 5.2:1 ✓ */
+.cta-btn { color: #1a1a2e; background: #e0e7ff; }</code>
+              </div>
+            </div>
+          </div>
+          <div class="chat-demo__input-area">
+            <div class="chat-demo__suggestions">
+              <button class="chat-demo__suggestion">Explain this issue simply</button>
+              <button class="chat-demo__suggestion">Generate React fix</button>
+              <button class="chat-demo__suggestion">Suggest UX improvements</button>
+            </div>
+            <div class="chat-demo__input-row">
+              <input type="text" class="chat-demo__input" placeholder="Ask about your audit results..." />
+              <button class="chat-demo__send">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA Section -->
+  <section class="cta-section">
+    <div class="section__container">
+      <div class="cta-card animate-in">
+        <h2 class="cta-card__title">Ready to Audit Your Website?</h2>
+        <p class="cta-card__desc">Enter any URL and get a comprehensive UX & Accessibility audit with AI-powered fixes in under 60 seconds.</p>
+        <div class="cta-card__input-wrap">
+          <input type="url" class="cta-card__input" placeholder="https://yourwebsite.com" />
+          <button class="btn btn--primary btn--lg">Start Free Audit</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="section__container">
+      <div class="footer__inner">
+        <div class="footer__brand">
+          <a href="#" class="nav__logo">
+            <div class="nav__logo-icon">
+              <svg viewBox="0 0 32 32" fill="none">
+                <rect x="2" y="2" width="28" height="28" rx="8" stroke="url(#logoGrad2)" stroke-width="2.5"/>
+                <path d="M10 16.5L14 20.5L22 12.5" stroke="url(#logoGrad2)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                <circle cx="24" cy="8" r="3" fill="#a78bfa"/>
+                <defs><linearGradient id="logoGrad2" x1="0" y1="0" x2="32" y2="32"><stop stop-color="#818cf8"/><stop offset="1" stop-color="#c084fc"/></linearGradient></defs>
+              </svg>
+            </div>
+            <span class="nav__logo-text">UX Auditor</span>
+          </a>
+          <p class="footer__tagline">AI-powered UX & Accessibility intelligence.</p>
+        </div>
+        <div class="footer__links">
+          <div class="footer__col">
+            <h4 class="footer__col-title">Product</h4>
+            <a href="#features" class="footer__link">Features</a>
+            <a href="#engines" class="footer__link">Engines</a>
+            <a href="#workflow" class="footer__link">Workflow</a>
+            <a href="#dashboard" class="footer__link">Dashboard</a>
+          </div>
+          <div class="footer__col">
+            <h4 class="footer__col-title">Resources</h4>
+            <a href="#" class="footer__link">Documentation</a>
+            <a href="#" class="footer__link">API Reference</a>
+            <a href="#" class="footer__link">WCAG Guide</a>
+            <a href="#" class="footer__link">Blog</a>
+          </div>
+          <div class="footer__col">
+            <h4 class="footer__col-title">Company</h4>
+            <a href="#" class="footer__link">About</a>
+            <a href="#" class="footer__link">Careers</a>
+            <a href="#" class="footer__link">Contact</a>
+            <a href="#" class="footer__link">Privacy</a>
+          </div>
+        </div>
+      </div>
+      <div class="footer__bottom">
+        <span>© 2026 Conversational UX Auditor. All rights reserved.</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Floating Audit Progress Modal -->
+  <div class="audit-modal" id="auditModal">
+    <div class="audit-modal__content">
+      <div class="audit-modal__close" id="auditModalClose">×</div>
+      
+      <div class="audit-modal__header">
+        <span class="section__overline">End-to-End Pipeline</span>
+        <h2 class="audit-modal__title">From URL to <span class="text-gradient">Verified Fixes</span></h2>
+        <p class="audit-modal__desc">A fully automated pipeline scanning <span id="auditModalUrl" class="font-mono text-indigo"></span></p>
+      </div>
+
+      <div class="workflow__pipeline audit-modal__pipeline" id="auditPipeline">
+        <div class="workflow__step" data-step="1">
+          <div class="workflow__step-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+          </div>
+          <span class="workflow__step-label">Browser Scan</span>
+        </div>
+        <div class="workflow__connector"><div class="workflow__connector-line"></div></div>
+        <div class="workflow__step" data-step="2">
+          <div class="workflow__step-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+          </div>
+          <span class="workflow__step-label">Data Extract</span>
+        </div>
+        <div class="workflow__connector"><div class="workflow__connector-line"></div></div>
+        <div class="workflow__step" data-step="3">
+          <div class="workflow__step-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+          </div>
+          <span class="workflow__step-label">WCAG + UX</span>
+        </div>
+        <div class="workflow__connector"><div class="workflow__connector-line"></div></div>
+        <div class="workflow__step" data-step="4">
+          <div class="workflow__step-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          </div>
+          <span class="workflow__step-label">Journeys</span>
+        </div>
+        <div class="workflow__connector"><div class="workflow__connector-line"></div></div>
+        <div class="workflow__step" data-step="5">
+          <div class="workflow__step-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+          </div>
+          <span class="workflow__step-label">AI Fixes</span>
+        </div>
+        <div class="workflow__connector"><div class="workflow__connector-line"></div></div>
+        <div class="workflow__step" data-step="6">
+          <div class="workflow__step-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          </div>
+          <span class="workflow__step-label">Verified</span>
+        </div>
+      </div>
+      
+      <div class="audit-modal__progress-container">
+        <div class="audit-modal__progress-bar" id="auditProgressBar"></div>
+      </div>
+      <div class="audit-modal__status" id="auditStatus">Initializing engine...</div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,33 @@
+@import "tailwindcss";
+
+@theme {
+  --color-background: 20 14.3% 4.1%;
+  --color-foreground: 60 9.1% 97.8%;
+  --color-card: 20 14.3% 4.1%;
+  --color-card-foreground: 60 9.1% 97.8%;
+  --color-popover: 20 14.3% 4.1%;
+  --color-popover-foreground: 60 9.1% 97.8%;
+  --color-primary: 263 70% 50%;
+  --color-primary-foreground: 60 9.1% 97.8%;
+  --color-secondary: 12 6.5% 15.1%;
+  --color-secondary-foreground: 60 9.1% 97.8%;
+  --color-muted: 12 6.5% 15.1%;
+  --color-muted-foreground: 24 5.4% 63.9%;
+  --color-accent: 263 70% 50%;
+  --color-accent-foreground: 60 9.1% 97.8%;
+  --color-destructive: 0 62.8% 30.6%;
+  --color-destructive-foreground: 60 9.1% 97.8%;
+  --color-border: 12 6.5% 15.1%;
+  --color-input: 12 6.5% 15.1%;
+  --color-ring: 263 70% 50%;
+}
+
+* {
+  border-color: hsl(12 6.5% 15.1%);
+}
+
+body {
+  background-color: hsl(20 14.3% 4.1%);
+  color: hsl(60 9.1% 97.8%);
+  font-family: system-ui, -apple-system, sans-serif;
+}

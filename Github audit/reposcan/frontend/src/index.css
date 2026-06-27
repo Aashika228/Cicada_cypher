@@ -1,0 +1,27 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  @apply bg-[#0a0a0a] text-white font-sans antialiased;
+}
+
+.glass-card {
+  @apply bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl;
+}
+
+.severity-critical {
+  @apply bg-reposcan-critical/20 text-reposcan-critical border-reposcan-critical/40;
+}
+
+.severity-high {
+  @apply bg-reposcan-high/20 text-reposcan-high border-reposcan-high/40;
+}
+
+.severity-medium {
+  @apply bg-reposcan-medium/20 text-reposcan-medium border-reposcan-medium/40;
+}
+
+.severity-low {
+  @apply bg-reposcan-low/20 text-reposcan-low border-reposcan-low/40;
+}

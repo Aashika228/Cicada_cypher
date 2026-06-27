@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(mkdir \"C:\\\\Users\\\\Aashika\\\\OneDrive\\\\Desktop\\\\Cicada_cypher\\\\shared\" 2>$null)"
+    ]
+  }
+}

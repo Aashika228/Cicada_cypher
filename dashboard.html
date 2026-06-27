@@ -1,0 +1,1771 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Conversational UX Auditor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.294.0/dist/umd/lucide.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f7f8fa;
+  --surface:#ffffff;
+  --border:#e5e7eb;
+  --border-light:#f0f1f3;
+  --text-primary:#0f172a;
+  --text-secondary:#64748b;
+  --text-muted:#94a3b8;
+  --blue:#2563eb;
+  --blue-light:#eff6ff;
+  --blue-mid:#dbeafe;
+  --green:#16a34a;
+  --green-light:#f0fdf4;
+  --red:#dc2626;
+  --red-light:#fef2f2;
+  --orange:#ea580c;
+  --orange-light:#fff7ed;
+  --yellow:#ca8a04;
+  --yellow-light:#fefce8;
+  --purple:#7c3aed;
+  --purple-light:#f5f3ff;
+  --shadow-sm:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04);
+  --shadow:0 4px 12px rgba(0,0,0,.06),0 2px 4px rgba(0,0,0,.04);
+  --shadow-lg:0 12px 32px rgba(0,0,0,.08),0 4px 8px rgba(0,0,0,.04);
+  --radius-sm:8px;
+  --radius:12px;
+  --radius-lg:16px;
+  --radius-xl:20px;
+  --sidebar-w:240px;
+  --topbar-h:60px;
+  --transition:all .2s cubic-bezier(.4,0,.2,1);
+}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text-primary);height:100vh;overflow:hidden;display:flex}
+/* ── SIDEBAR ── */
+#sidebar{
+  width:var(--sidebar-w);min-width:var(--sidebar-w);height:100vh;background:var(--surface);
+  border-right:1px solid var(--border);display:flex;flex-direction:column;
+  padding:0;position:relative;z-index:100;transition:var(--transition);
+}
+.sb-logo{display:flex;align-items:center;gap:10px;padding:18px 20px;border-bottom:1px solid var(--border-light)}
+.sb-logo-icon{width:34px;height:34px;background:linear-gradient(135deg,#2563eb,#7c3aed);border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.sb-logo-icon svg{color:#fff;width:18px;height:18px}
+.sb-logo-text{font-size:13px;font-weight:700;line-height:1.3;color:var(--text-primary)}
+.sb-logo-sub{font-size:10.5px;color:var(--text-muted);font-weight:400}
+.sb-nav{flex:1;padding:12px 10px;overflow-y:auto;display:flex;flex-direction:column;gap:2px}
+.sb-section{font-size:10px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.8px;padding:8px 10px 4px}
+.sb-item{display:flex;align-items:center;gap:10px;padding:9px 11px;border-radius:var(--radius-sm);cursor:pointer;transition:var(--transition);font-size:13.5px;font-weight:500;color:var(--text-secondary);position:relative}
+.sb-item:hover{background:var(--bg);color:var(--text-primary)}
+.sb-item.active{background:var(--blue-light);color:var(--blue);font-weight:600}
+.sb-item.active .sb-icon{color:var(--blue)}
+.sb-icon{width:16px;height:16px;flex-shrink:0;opacity:.85}
+.sb-badge{margin-left:auto;background:var(--red);color:#fff;font-size:10px;font-weight:700;padding:1px 6px;border-radius:20px}
+.sb-badge.warn{background:var(--orange)}
+.sb-bottom{padding:12px 10px;border-top:1px solid var(--border-light)}
+.sb-user{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:var(--radius-sm);cursor:pointer;transition:var(--transition)}
+.sb-user:hover{background:var(--bg)}
+.sb-avatar{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,#2563eb,#7c3aed);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0}
+.sb-user-info{flex:1;min-width:0}
+.sb-user-name{font-size:13px;font-weight:600;color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sb-user-role{font-size:11px;color:var(--text-muted)}
+/* ── MAIN ── */
+#main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
+/* ── TOPBAR ── */
+#topbar{
+  height:var(--topbar-h);background:var(--surface);border-bottom:1px solid var(--border);
+  display:flex;align-items:center;padding:0 24px;gap:16px;flex-shrink:0;
+}
+.tb-title{font-size:15px;font-weight:700;color:var(--text-primary);flex:1}
+.tb-sub{font-size:12px;color:var(--text-muted);font-weight:400;margin-left:4px}
+.tb-search{display:flex;align-items:center;gap:8px;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);padding:7px 12px;width:220px;cursor:text;transition:var(--transition)}
+.tb-search:focus-within{border-color:var(--blue);box-shadow:0 0 0 3px var(--blue-mid)}
+.tb-search input{border:none;background:transparent;font-size:13px;color:var(--text-primary);outline:none;width:100%;font-family:'Inter',sans-serif}
+.tb-search input::placeholder{color:var(--text-muted)}
+.tb-btn{display:flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--surface);cursor:pointer;transition:var(--transition);color:var(--text-secondary);position:relative}
+.tb-btn:hover{background:var(--bg);border-color:var(--text-muted);color:var(--text-primary)}
+.tb-notif{width:7px;height:7px;background:var(--red);border-radius:50%;position:absolute;top:5px;right:5px;border:1.5px solid var(--surface)}
+.tb-audit-url{display:flex;align-items:center;gap:6px;background:var(--blue-light);border:1px solid var(--blue-mid);border-radius:var(--radius-sm);padding:5px 11px;font-size:12.5px;font-weight:500;color:var(--blue)}
+/* ── CONTENT ── */
+#content{flex:1;overflow-y:auto;padding:28px 28px 40px;position:relative}
+.page{display:none;animation:fadeIn .25s ease}
+.page.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+/* ── CARDS ── */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:22px 24px;box-shadow:var(--shadow-sm);transition:var(--transition)}
+.card:hover{box-shadow:var(--shadow)}
+.card-sm{padding:16px 18px;border-radius:var(--radius)}
+/* ── GRID ── */
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+.grid-6{display:grid;grid-template-columns:repeat(6,1fr);gap:14px}
+/* ── BADGES ── */
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:20px;font-size:11.5px;font-weight:600;white-space:nowrap}
+.badge-critical{background:#fef2f2;color:#dc2626;border:1px solid #fecaca}
+.badge-high{background:#fff7ed;color:#ea580c;border:1px solid #fed7aa}
+.badge-medium{background:#fefce8;color:#ca8a04;border:1px solid #fde68a}
+.badge-low{background:#f0fdf4;color:#16a34a;border:1px solid #bbf7d0}
+.badge-pass{background:#f0fdf4;color:#16a34a;border:1px solid #bbf7d0}
+.badge-warn{background:#fff7ed;color:#ea580c;border:1px solid #fed7aa}
+.badge-fail{background:#fef2f2;color:#dc2626;border:1px solid #fecaca}
+.badge-info{background:var(--blue-light);color:var(--blue);border:1px solid var(--blue-mid)}
+.badge-verified{background:#f0fdf4;color:#15803d;border:1px solid #86efac}
+.badge-purple{background:#f5f3ff;color:#7c3aed;border:1px solid #ddd6fe}
+/* ── SCORE RING ── */
+.score-ring{position:relative;display:inline-flex;align-items:center;justify-content:center}
+.score-ring svg{transform:rotate(-90deg)}
+.score-ring-val{position:absolute;text-align:center}
+/* ── BUTTONS ── */
+.btn{display:inline-flex;align-items:center;gap:7px;padding:9px 16px;border-radius:var(--radius-sm);font-size:13.5px;font-weight:600;cursor:pointer;transition:var(--transition);border:none;font-family:'Inter',sans-serif;white-space:nowrap}
+.btn-primary{background:var(--blue);color:#fff}
+.btn-primary:hover{background:#1d4ed8;box-shadow:0 4px 12px rgba(37,99,235,.3)}
+.btn-secondary{background:var(--surface);color:var(--text-primary);border:1px solid var(--border)}
+.btn-secondary:hover{background:var(--bg);border-color:var(--text-muted)}
+.btn-ghost{background:transparent;color:var(--text-secondary);border:1px solid transparent}
+.btn-ghost:hover{background:var(--bg);color:var(--text-primary)}
+.btn-danger{background:var(--red);color:#fff}
+.btn-danger:hover{background:#b91c1c}
+.btn-sm{padding:6px 12px;font-size:12.5px}
+.btn-xs{padding:4px 9px;font-size:11.5px}
+/* ── FILTER CHIPS ── */
+.filter-bar{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:18px}
+.chip{padding:5px 13px;border-radius:20px;font-size:12.5px;font-weight:500;cursor:pointer;transition:var(--transition);border:1px solid var(--border);background:var(--surface);color:var(--text-secondary)}
+.chip:hover{border-color:var(--blue);color:var(--blue)}
+.chip.active{background:var(--blue);color:#fff;border-color:var(--blue)}
+/* ── PROGRESS BAR ── */
+.progress-track{width:100%;height:6px;background:var(--border-light);border-radius:3px;overflow:hidden}
+.progress-fill{height:100%;border-radius:3px;transition:width .6s cubic-bezier(.4,0,.2,1)}
+/* ── SECTION HEADERS ── */
+.section-h{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.section-title{font-size:16px;font-weight:700;color:var(--text-primary)}
+.section-sub{font-size:13px;color:var(--text-muted);margin-top:2px}
+/* ── DIVIDER ── */
+.divider{border:none;border-top:1px solid var(--border-light);margin:18px 0}
+/* ── TABLE ── */
+.tbl{width:100%;border-collapse:collapse;font-size:13px}
+.tbl th{text-align:left;padding:10px 14px;background:var(--bg);font-size:11.5px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border)}
+.tbl td{padding:12px 14px;border-bottom:1px solid var(--border-light);vertical-align:middle}
+.tbl tr:last-child td{border-bottom:none}
+.tbl tr:hover td{background:var(--bg)}
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:#d1d5db;border-radius:99px}
+::-webkit-scrollbar-thumb:hover{background:#9ca3af}
+/* ══════════════════════════════
+   PAGE: DASHBOARD
+══════════════════════════════ */
+.audit-hero{display:grid;grid-template-columns:auto 1fr auto;gap:24px;align-items:center;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-xl);padding:24px 28px;box-shadow:var(--shadow-sm);margin-bottom:22px}
+.audit-screenshot{width:140px;height:88px;background:linear-gradient(135deg,#e0e7ff 0%,#ede9fe 50%,#dbeafe 100%);border-radius:var(--radius);overflow:hidden;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;flex-shrink:0;position:relative}
+.audit-screenshot-inner{width:100%;height:100%;display:flex;flex-direction:column;gap:4px;padding:8px}
+.screen-bar{background:rgba(37,99,235,.25);border-radius:3px;height:6px}
+.screen-bar.short{width:60%}
+.screen-bar.med{width:80%}
+.screen-bar.full{width:100%}
+.audit-meta{display:flex;flex-direction:column;gap:5px}
+.audit-url{font-size:15px;font-weight:700;color:var(--text-primary)}
+.audit-url a{color:var(--blue);text-decoration:none}
+.audit-url a:hover{text-decoration:underline}
+.audit-info-row{display:flex;gap:18px;flex-wrap:wrap}
+.audit-info-item{display:flex;align-items:center;gap:5px;font-size:12.5px;color:var(--text-secondary)}
+.audit-info-item svg{color:var(--text-muted);width:13px;height:13px}
+.audit-grade{text-align:center}
+.grade-letter{font-size:52px;font-weight:800;line-height:1;background:linear-gradient(135deg,#2563eb,#7c3aed);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.grade-sub{font-size:11.5px;color:var(--text-muted);font-weight:500}
+.kpi-val{font-size:28px;font-weight:800;line-height:1.1;margin-top:6px}
+.kpi-lbl{font-size:12px;color:var(--text-muted);font-weight:500}
+.kpi-trend{display:flex;align-items:center;gap:4px;font-size:11.5px;font-weight:600;margin-top:4px}
+.kpi-trend.up{color:var(--green)}
+.kpi-trend.down{color:var(--red)}
+.kpi-icon-wrap{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;margin-bottom:8px}
+/* ── TIMELINE ── */
+.timeline{display:flex;flex-direction:column;gap:0}
+.tl-item{display:flex;gap:14px;position:relative}
+.tl-left{display:flex;flex-direction:column;align-items:center;width:28px;flex-shrink:0}
+.tl-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;margin-top:4px;border:2px solid var(--surface);box-shadow:0 0 0 2px currentColor}
+.tl-line{flex:1;width:1px;background:var(--border-light);margin-top:4px}
+.tl-item:last-child .tl-line{display:none}
+.tl-content{padding-bottom:16px;flex:1;min-width:0}
+.tl-time{font-size:11.5px;color:var(--text-muted);margin-bottom:2px}
+.tl-text{font-size:13px;color:var(--text-primary);font-weight:500}
+.tl-detail{font-size:12px;color:var(--text-secondary);margin-top:1px}
+/* ══════════════════════════════
+   PAGE: ACCESSIBILITY
+══════════════════════════════ */
+.acc-score-hero{display:flex;align-items:center;gap:28px;background:linear-gradient(135deg,#eff6ff,#f5f3ff);border:1px solid #dbeafe;border-radius:var(--radius-xl);padding:24px 28px;margin-bottom:20px}
+.acc-score-big{font-size:64px;font-weight:800;color:var(--blue);line-height:1}
+.acc-score-label{font-size:14px;font-weight:700;color:var(--text-primary);margin-bottom:4px}
+.acc-progress-wrap{flex:1}
+.issue-cat{margin-bottom:12px;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+.issue-cat-header{display:flex;align-items:center;gap:10px;padding:13px 16px;background:var(--surface);cursor:pointer;transition:var(--transition);user-select:none}
+.issue-cat-header:hover{background:var(--bg)}
+.issue-cat-header.open{background:var(--bg)}
+.issue-cat-title{font-size:13.5px;font-weight:600;color:var(--text-primary);flex:1}
+.issue-cat-stats{display:flex;gap:6px}
+.issue-cat-body{display:none;padding:2px 0 8px}
+.issue-cat-body.open{display:block}
+.issue-card{margin:4px 12px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;transition:var(--transition)}
+.issue-card:hover{box-shadow:var(--shadow);border-color:var(--blue-mid)}
+.issue-card-header{display:flex;align-items:flex-start;gap:10px;margin-bottom:10px}
+.issue-card-title{font-size:13.5px;font-weight:600;color:var(--text-primary);flex:1}
+.issue-thumb{width:72px;height:46px;background:linear-gradient(135deg,#e0e7ff,#ede9fe);border-radius:6px;flex-shrink:0;display:flex;align-items:center;justify-content:center;border:1px solid var(--border)}
+.issue-meta-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:12px}
+.issue-meta-item{}
+.issue-meta-label{color:var(--text-muted);font-weight:500;font-size:11px}
+.issue-meta-val{color:var(--text-primary);font-weight:500;margin-top:1px;font-family:monospace;font-size:11.5px}
+.issue-solution{font-size:12.5px;color:var(--text-secondary);line-height:1.55;margin-top:8px;padding-top:8px;border-top:1px solid var(--border-light)}
+.issue-actions{display:flex;gap:6px;margin-top:10px}
+/* ══════════════════════════════
+   PAGE: UX HEURISTICS
+══════════════════════════════ */
+.heuristic-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px 22px;transition:var(--transition);cursor:pointer}
+.heuristic-card:hover{box-shadow:var(--shadow);border-color:var(--blue-mid);transform:translateY(-1px)}
+.heuristic-num{font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px}
+.heuristic-title{font-size:14.5px;font-weight:700;color:var(--text-primary);margin-bottom:10px;line-height:1.3}
+.heuristic-score-row{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.h-score-num{font-size:26px;font-weight:800}
+.h-score-max{font-size:13px;color:var(--text-muted);font-weight:500}
+.h-conf{font-size:12px;color:var(--text-secondary)}
+.h-ai-text{font-size:12.5px;color:var(--text-secondary);line-height:1.55;margin-top:8px;padding-top:8px;border-top:1px solid var(--border-light)}
+/* ══════════════════════════════
+   PAGE: USER JOURNEY
+══════════════════════════════ */
+.journey-flow{display:flex;align-items:flex-start;gap:0;overflow-x:auto;padding:8px 0 20px}
+.journey-step{display:flex;flex-direction:column;align-items:center;min-width:130px;position:relative}
+.journey-step-card{width:120px;background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius);padding:12px;cursor:pointer;transition:var(--transition);text-align:center}
+.journey-step-card:hover{box-shadow:var(--shadow);transform:translateY(-2px)}
+.journey-step-card.success{border-color:#bbf7d0}
+.journey-step-card.warning{border-color:#fed7aa}
+.journey-step-card.failed{border-color:#fecaca;background:#fef2f2}
+.journey-step-card.active-step{border-color:var(--blue);box-shadow:0 0 0 3px var(--blue-mid)}
+.journey-icon{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;margin:0 auto 8px;font-size:18px}
+.journey-step-name{font-size:12.5px;font-weight:700;color:var(--text-primary);margin-bottom:4px}
+.journey-step-status{font-size:11px;font-weight:600}
+.journey-arrow{display:flex;align-items:center;padding:0 4px;margin-top:19px;color:var(--text-muted)}
+.journey-detail{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:24px;margin-top:16px;display:none}
+.journey-detail.open{display:block;animation:fadeIn .2s ease}
+.journey-detail-grid{display:grid;grid-template-columns:160px 1fr;gap:20px}
+.journey-screenshot{width:100%;height:120px;background:linear-gradient(135deg,#e0e7ff,#ede9fe);border-radius:var(--radius);display:flex;align-items:center;justify-content:center;border:1px solid var(--border)}
+/* ══════════════════════════════
+   PAGE: AI FIXES
+══════════════════════════════ */
+.fix-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:22px;margin-bottom:16px;transition:var(--transition)}
+.fix-card:hover{box-shadow:var(--shadow)}
+.fix-card-header{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+.fix-card-title{font-size:15px;font-weight:700;color:var(--text-primary);flex:1}
+.fix-meta-row{display:flex;gap:14px;margin-bottom:14px;flex-wrap:wrap}
+.fix-meta-item{font-size:12px;color:var(--text-secondary)}
+.fix-meta-item strong{color:var(--text-primary);font-weight:600}
+.code-block{background:#0f172a;color:#e2e8f0;border-radius:var(--radius);padding:14px 16px;font-size:12px;font-family:'Courier New',monospace;line-height:1.6;overflow-x:auto;position:relative;margin-top:6px}
+.code-block .code-label{font-size:10.5px;color:#64748b;font-family:'Inter',sans-serif;text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px;display:block}
+.code-copy-btn{position:absolute;top:10px;right:10px;background:#1e293b;color:#94a3b8;border:1px solid #334155;border-radius:5px;padding:3px 9px;font-size:11px;cursor:pointer;transition:var(--transition);font-family:'Inter',sans-serif}
+.code-copy-btn:hover{background:#334155;color:#e2e8f0}
+.before-after{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+.ba-pane{border-radius:var(--radius);overflow:hidden;border:1px solid var(--border)}
+.ba-pane-label{padding:8px 12px;font-size:11.5px;font-weight:600;display:flex;align-items:center;gap:6px}
+.ba-before .ba-pane-label{background:#fef2f2;color:#dc2626}
+.ba-after .ba-pane-label{background:#f0fdf4;color:#16a34a}
+.ba-preview{height:80px;display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--text-muted);background:var(--bg)}
+.slider-wrap{position:relative;border-radius:var(--radius);overflow:hidden;height:120px;border:1px solid var(--border);margin-bottom:14px}
+.slider-before,.slider-after{position:absolute;top:0;height:100%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600}
+.slider-before{left:0;right:0;background:linear-gradient(135deg,#fee2e2,#fef2f2);color:var(--red)}
+.slider-after{right:0;background:linear-gradient(135deg,#dcfce7,#f0fdf4);color:var(--green);width:50%;border-left:2.5px solid var(--surface)}
+.slider-handle{position:absolute;top:0;bottom:0;width:4px;background:var(--surface);box-shadow:var(--shadow);left:50%;transform:translateX(-50%);cursor:ew-resize;z-index:10;display:flex;align-items:center;justify-content:center}
+.slider-handle::after{content:'⟺';position:absolute;background:var(--surface);padding:4px 7px;border-radius:6px;font-size:14px;box-shadow:var(--shadow);border:1px solid var(--border)}
+/* ══════════════════════════════
+   PAGE: REPORTS
+══════════════════════════════ */
+.report-doc{max-width:860px;margin:0 auto;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-xl);padding:48px 52px;box-shadow:var(--shadow-lg)}
+.report-header{text-align:center;padding-bottom:32px;border-bottom:2px solid var(--border);margin-bottom:36px}
+.report-logo{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:16px}
+.report-logo-icon{width:42px;height:42px;background:linear-gradient(135deg,#2563eb,#7c3aed);border-radius:11px;display:flex;align-items:center;justify-content:center}
+.report-title{font-size:28px;font-weight:800;color:var(--text-primary);margin-bottom:6px}
+.report-subtitle{font-size:14px;color:var(--text-secondary)}
+.report-section{margin-bottom:32px}
+.report-section-title{font-size:18px;font-weight:800;color:var(--text-primary);margin-bottom:4px;display:flex;align-items:center;gap:8px}
+.report-section-title::after{content:'';flex:1;height:1px;background:var(--border);margin-left:8px}
+.report-section-sub{font-size:13px;color:var(--text-muted);margin-bottom:14px}
+.exec-summary{background:linear-gradient(135deg,#eff6ff,#f5f3ff);border:1px solid #dbeafe;border-radius:var(--radius-lg);padding:20px 22px;font-size:14px;color:var(--text-secondary);line-height:1.7}
+.roadmap-item{display:flex;gap:14px;padding:12px 0;border-bottom:1px solid var(--border-light)}
+.roadmap-item:last-child{border-bottom:none}
+.roadmap-num{width:28px;height:28px;border-radius:50%;background:var(--blue);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;margin-top:1px}
+.roadmap-content{}
+.roadmap-title{font-size:13.5px;font-weight:700;color:var(--text-primary);margin-bottom:2px}
+.roadmap-desc{font-size:12.5px;color:var(--text-secondary)}
+/* ══════════════════════════════
+   PAGE: AI CHAT
+══════════════════════════════ */
+.chat-wrap{display:flex;flex-direction:column;height:calc(100vh - var(--topbar-h) - 56px);max-height:800px}
+.chat-messages{flex:1;overflow-y:auto;padding:16px 0;display:flex;flex-direction:column;gap:16px}
+.chat-welcome{text-align:center;padding:32px 24px}
+.chat-welcome-icon{width:60px;height:60px;background:linear-gradient(135deg,#2563eb,#7c3aed);border-radius:18px;display:flex;align-items:center;justify-content:center;margin:0 auto 16px}
+.chat-welcome-title{font-size:20px;font-weight:800;color:var(--text-primary);margin-bottom:6px}
+.chat-welcome-sub{font-size:14px;color:var(--text-secondary);margin-bottom:20px}
+.chat-suggestions{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.chat-suggestion{padding:7px 13px;background:var(--surface);border:1px solid var(--border);border-radius:20px;font-size:12.5px;color:var(--text-secondary);cursor:pointer;transition:var(--transition)}
+.chat-suggestion:hover{border-color:var(--blue);color:var(--blue);background:var(--blue-light)}
+.chat-msg{display:flex;gap:10px;max-width:100%}
+.chat-msg.user{flex-direction:row-reverse}
+.chat-bubble{max-width:75%;padding:12px 16px;border-radius:14px;font-size:13.5px;line-height:1.6}
+.chat-msg.ai .chat-bubble{background:var(--surface);border:1px solid var(--border);color:var(--text-primary);border-radius:4px 14px 14px 14px}
+.chat-msg.user .chat-bubble{background:var(--blue);color:#fff;border-radius:14px 4px 14px 14px}
+.chat-avatar{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:12px;font-weight:700;margin-top:2px}
+.chat-msg.ai .chat-avatar{background:linear-gradient(135deg,#2563eb,#7c3aed);color:#fff}
+.chat-msg.user .chat-avatar{background:var(--bg);border:1px solid var(--border);color:var(--text-secondary)}
+.chat-code{background:#0f172a;color:#e2e8f0;border-radius:var(--radius-sm);padding:12px 14px;font-size:12px;font-family:'Courier New',monospace;line-height:1.6;margin-top:8px;overflow-x:auto}
+.chat-input-area{display:flex;gap:10px;padding:14px 0 0;border-top:1px solid var(--border)}
+.chat-input{flex:1;background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius);padding:11px 14px;font-size:13.5px;color:var(--text-primary);outline:none;font-family:'Inter',sans-serif;resize:none;line-height:1.5;transition:var(--transition)}
+.chat-input:focus{border-color:var(--blue);box-shadow:0 0 0 3px var(--blue-mid)}
+.chat-send-btn{width:42px;height:42px;background:var(--blue);border:none;border-radius:var(--radius-sm);cursor:pointer;display:flex;align-items:center;justify-content:center;color:#fff;flex-shrink:0;transition:var(--transition)}
+.chat-send-btn:hover{background:#1d4ed8;box-shadow:0 4px 12px rgba(37,99,235,.3)}
+/* ── FLOATING AI BUTTON ── */
+#floatAI{
+  position:fixed;bottom:28px;right:28px;width:52px;height:52px;
+  background:linear-gradient(135deg,#2563eb,#7c3aed);
+  border-radius:50%;display:flex;align-items:center;justify-content:center;
+  cursor:pointer;box-shadow:0 8px 24px rgba(37,99,235,.35);
+  transition:var(--transition);z-index:1000;border:none;
+}
+#floatAI:hover{transform:scale(1.08);box-shadow:0 12px 32px rgba(37,99,235,.4)}
+#floatAI svg{color:#fff;width:22px;height:22px}
+/* ── MISC ── */
+.stat-mini{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border-light)}
+.stat-mini:last-child{border-bottom:none}
+.anno-screenshot{background:linear-gradient(135deg,#e0e7ff,#ede9fe);border-radius:var(--radius);height:80px;display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--text-muted);border:1px solid var(--border)}
+.trend-up{color:var(--green)}
+.trend-down{color:var(--red)}
+.wcag-ref{font-size:11px;color:var(--blue);font-weight:600;background:var(--blue-light);padding:2px 7px;border-radius:4px;display:inline-block}
+.expand-icon{transition:transform .2s ease;color:var(--text-muted);width:16px;height:16px}
+.issue-cat-header.open .expand-icon{transform:rotate(180deg)}
+</style>
+</head>
+<body>
+<!-- ══ SIDEBAR ══ -->
+<aside id="sidebar">
+  <div class="sb-logo">
+    <div class="sb-logo-icon"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9.75 3.104v5.714a2.25 2.25 0 01-.659 1.591L5 14.5M9.75 3.104c-.251.023-.501.05-.75.082m.75-.082a24.301 24.301 0 014.5 0m0 0v5.714c0 .597.237 1.17.659 1.591L19.8 15.3M14.25 3.104c.251.023.501.05.75.082M19.8 15.3l-1.57.393A9.065 9.065 0 0112 15a9.065 9.065 0 00-6.23-.693L5 14.5m14.8.8l1.402 1.402c1 1 .03 2.698-1.32 2.698H4.12c-1.35 0-2.32-1.698-1.32-2.698L4 15.3"/></svg></div>
+    <div><div class="sb-logo-text">UX Auditor</div><div class="sb-logo-sub">AI-Powered Platform</div></div>
+  </div>
+  <nav class="sb-nav">
+    <div class="sb-section">Main</div>
+    <div class="sb-item active" data-page="dashboard" onclick="switchPage('dashboard',this)">
+      <svg class="sb-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      Dashboard
+    </div>
+    <div class="sb-item" data-page="accessibility" onclick="switchPage('accessibility',this)">
+      <svg class="sb-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="5" r="1"/><path stroke-linecap="round" stroke-linejoin="round" d="M3 9l4 1 5-1 5 1 4-1m-9 3v8m-3-5l3 5 3-5"/></svg>
+      Accessibility
+      <span class="sb-badge">14</span>
+    </div>
+    <div class="sb-item" data-page="heuristics" onclick="switchPage('heuristics',this)">
+      <svg class="sb-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+      UX Heuristics
+      <span class="sb-badge warn">7</span>
+    </div>
+    <div class="sb-item" data-page="journey" onclick="switchPage('journey',this)">
+      <svg class="sb-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+      User Journey
+    </div>
+    <div class="sb-item" data-page="aifixes" onclick="switchPage('aifixes',this)">
+      <svg class="sb-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><circle cx="12" cy="12" r="3"/></svg>
+      AI Fixes
+    </div>
+    <div class="sb-section">Output</div>
+    <div class="sb-item" data-page="reports" onclick="switchPage('reports',this)">
+      <svg class="sb-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+      Reports
+    </div>
+    <div class="sb-item" data-page="chat" onclick="switchPage('chat',this)">
+      <svg class="sb-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+      AI Chat
+    </div>
+  </nav>
+  <div class="sb-bottom">
+    <div class="sb-user">
+      <div class="sb-avatar">JD</div>
+      <div class="sb-user-info">
+        <div class="sb-user-name">Jamie Davis</div>
+        <div class="sb-user-role">Lead UX Engineer</div>
+      </div>
+      <svg style="color:var(--text-muted);width:14px;height:14px;flex-shrink:0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 9l4-4 4 4m0 6l-4 4-4-4"/></svg>
+    </div>
+  </div>
+</aside>
+
+<!-- ══ MAIN ══ -->
+<div id="main">
+  <!-- TOP BAR -->
+  <header id="topbar">
+    <div class="tb-title" id="tb-title">Dashboard <span class="tb-sub">/ Overview</span></div>
+    <div class="tb-audit-url">
+      <svg style="width:13px;height:13px" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path stroke-linecap="round" stroke-linejoin="round" d="M2 12h20M12 2a15.3 15.3 0 010 20M12 2a15.3 15.3 0 000 20"/></svg>
+      acme-corp.io
+    </div>
+    <div class="tb-search">
+      <svg style="width:14px;height:14px;color:var(--text-muted);flex-shrink:0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35"/></svg>
+      <input type="text" placeholder="Search issues..."/>
+    </div>
+    <div class="tb-btn" title="Notifications" style="position:relative">
+      <svg style="width:16px;height:16px" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+      <span class="tb-notif"></span>
+    </div>
+    <div class="tb-btn" title="Settings">
+      <svg style="width:16px;height:16px" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><circle cx="12" cy="12" r="3"/></svg>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px">
+      <div style="width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,#2563eb,#7c3aed);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff">JD</div>
+    </div>
+  </header>
+
+  <!-- ══ CONTENT ══ -->
+  <div id="content">
+
+    <!-- ════════════ PAGE: DASHBOARD ════════════ -->
+    <div id="page-dashboard" class="page active">
+      <!-- AUDIT HERO -->
+      <div class="audit-hero">
+        <div class="audit-screenshot">
+          <div class="audit-screenshot-inner">
+            <div style="height:10px;background:linear-gradient(90deg,#2563eb,#7c3aed);border-radius:3px;margin-bottom:6px;opacity:.7"></div>
+            <div class="screen-bar full"></div><div class="screen-bar med"></div><div class="screen-bar full"></div>
+            <div style="height:28px;background:rgba(37,99,235,.12);border-radius:4px;margin:4px 0"></div>
+            <div class="screen-bar short"></div><div class="screen-bar med"></div>
+          </div>
+          <div style="position:absolute;bottom:5px;right:7px;font-size:9px;color:rgba(37,99,235,.5);font-weight:600">PREVIEW</div>
+        </div>
+        <div class="audit-meta">
+          <div class="audit-url"><a href="#">https://acme-corp.io</a></div>
+          <div class="audit-info-row">
+            <div class="audit-info-item"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>June 27, 2026 · 09:42 AM</div>
+            <div class="audit-info-item"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Duration: 3m 24s</div>
+            <div class="audit-info-item"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path stroke-linecap="round" stroke-linejoin="round" d="M2 12h20M12 2a15.3 15.3 0 010 20M12 2a15.3 15.3 0 000 20"/></svg>8 pages audited</div>
+            <div class="audit-info-item"><span style="background:#f0fdf4;color:#16a34a;font-size:11px;font-weight:600;padding:2px 8px;border-radius:4px;border:1px solid #bbf7d0">Audit Complete ✓</span></div>
+          </div>
+          <div style="margin-top:8px">
+            <div style="font-size:12px;color:var(--text-muted);margin-bottom:6px">Overall Compliance</div>
+            <div style="display:flex;align-items:center;gap:10px">
+              <div class="progress-track" style="width:260px;height:8px">
+                <div class="progress-fill" style="width:73%;background:linear-gradient(90deg,#2563eb,#7c3aed)"></div>
+              </div>
+              <span style="font-size:13px;font-weight:700;color:var(--text-primary)">73%</span>
+            </div>
+          </div>
+        </div>
+        <div class="audit-grade">
+          <div class="grade-letter">B+</div>
+          <div style="font-size:13px;font-weight:700;color:var(--text-primary);margin-top:2px">78.4<span style="font-size:11px;color:var(--text-muted)">/100</span></div>
+          <div class="grade-sub">Overall UX Score</div>
+          <div style="margin-top:8px;display:flex;gap:4px;justify-content:center">
+            <span class="badge badge-warn">27 Issues</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- KPI CARDS -->
+      <div class="grid-4" style="margin-bottom:20px">
+        <div class="card card-sm">
+          <div class="kpi-icon-wrap" style="background:#eff6ff"><svg style="width:18px;height:18px;color:#2563eb" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="5" r="1"/><path stroke-linecap="round" stroke-linejoin="round" d="M3 9l4 1 5-1 5 1 4-1m-9 3v8m-3-5l3 5 3-5"/></svg></div>
+          <div class="kpi-lbl">Accessibility Score</div>
+          <div class="kpi-val" style="color:#2563eb">71</div>
+          <div class="kpi-trend down"><svg style="width:12px;height:12px" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/><polyline points="17 18 23 18 23 12"/></svg>−3 from last</div>
+        </div>
+        <div class="card card-sm">
+          <div class="kpi-icon-wrap" style="background:#f5f3ff"><svg style="width:18px;height:18px;color:#7c3aed" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg></div>
+          <div class="kpi-lbl">UX Heuristic Score</div>
+          <div class="kpi-val" style="color:#7c3aed">82</div>
+          <div class="kpi-trend up"><svg style="width:12px;height:12px" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>+5 from last</div>
+        </div>
+        <div class="card card-sm">
+          <div class="kpi-icon-wrap" style="background:#ecfdf5"><svg style="width:18px;height:18px;color:#16a34a" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg></div>
+          <div class="kpi-lbl">User Journey Score</div>
+          <div class="kpi-val" style="color:#16a34a">79</div>
+          <div class="kpi-trend up"><svg style="width:12px;height:12px" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>+2 from last</div>
+        </div>
+        <div class="card card-sm">
+          <div class="kpi-icon-wrap" style="background:#fff7ed"><svg style="width:18px;height:18px;color:#ea580c" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg></div>
+          <div class="kpi-lbl">Performance Score</div>
+          <div class="kpi-val" style="color:#ea580c">68</div>
+          <div class="kpi-trend down"><svg style="width:12px;height:12px" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/><polyline points="17 18 23 18 23 12"/></svg>−7 from last</div>
+        </div>
+      </div>
+
+      <div class="grid-4" style="margin-bottom:24px">
+        <div class="card card-sm" style="border-color:#fecaca">
+          <div style="font-size:11px;color:var(--text-muted);font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Total Issues</div>
+          <div style="font-size:34px;font-weight:800;color:var(--text-primary)">27</div>
+          <div style="font-size:12px;color:var(--text-secondary);margin-top:2px">Across all categories</div>
+        </div>
+        <div class="card card-sm" style="border-color:#fecaca;background:#fef9f9">
+          <div style="font-size:11px;color:var(--red);font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Critical Issues</div>
+          <div style="font-size:34px;font-weight:800;color:var(--red)">5</div>
+          <div style="font-size:12px;color:var(--text-secondary);margin-top:2px">Require immediate action</div>
+        </div>
+        <div class="card card-sm" style="border-color:#fed7aa">
+          <div style="font-size:11px;color:var(--orange);font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">High Priority</div>
+          <div style="font-size:34px;font-weight:800;color:var(--orange)">9</div>
+          <div style="font-size:12px;color:var(--text-secondary);margin-top:2px">Fix within this sprint</div>
+        </div>
+        <div class="card card-sm" style="border-color:#bbf7d0">
+          <div style="font-size:11px;color:var(--green);font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Compliance</div>
+          <div style="font-size:34px;font-weight:800;color:var(--green)">73%</div>
+          <div style="font-size:12px;color:var(--text-secondary);margin-top:2px">WCAG 2.1 AA standard</div>
+        </div>
+      </div>
+
+      <!-- CHARTS + TIMELINE -->
+      <div class="grid-2" style="margin-bottom:20px">
+        <div class="card" style="min-height:300px">
+          <div class="section-h"><div><div class="section-title">Audit Radar</div><div class="section-sub">Category performance overview</div></div></div>
+          <canvas id="radarChart" height="240"></canvas>
+        </div>
+        <div class="card">
+          <div class="section-h"><div><div class="section-title">Check Results</div><div class="section-sub">Passed · Warning · Failed</div></div></div>
+          <div style="display:flex;align-items:center;gap:24px">
+            <canvas id="pieChart" width="180" height="180" style="flex-shrink:0"></canvas>
+            <div style="flex:1">
+              <div class="stat-mini"><span style="font-size:13px;color:var(--text-secondary);display:flex;align-items:center;gap:6px"><span style="width:10px;height:10px;background:#22c55e;border-radius:50%;display:inline-block"></span>Passed</span><span style="font-size:15px;font-weight:700;color:var(--green)">84</span></div>
+              <div class="stat-mini"><span style="font-size:13px;color:var(--text-secondary);display:flex;align-items:center;gap:6px"><span style="width:10px;height:10px;background:#f59e0b;border-radius:50%;display:inline-block"></span>Warning</span><span style="font-size:15px;font-weight:700;color:var(--yellow)">18</span></div>
+              <div class="stat-mini"><span style="font-size:13px;color:var(--text-secondary);display:flex;align-items:center;gap:6px"><span style="width:10px;height:10px;background:#ef4444;border-radius:50%;display:inline-block"></span>Failed</span><span style="font-size:15px;font-weight:700;color:var(--red)">27</span></div>
+              <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border-light)">
+                <div style="font-size:12px;color:var(--text-muted);margin-bottom:4px">Total Checks</div>
+                <div style="font-size:20px;font-weight:800;color:var(--text-primary)">129</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TIMELINE + ACTIONS -->
+      <div class="grid-2">
+        <div class="card">
+          <div class="section-h"><div class="section-title">Recent Activity</div><button class="btn btn-ghost btn-xs">View all</button></div>
+          <div class="timeline">
+            <div class="tl-item"><div class="tl-left"><div class="tl-dot" style="color:#dc2626"></div><div class="tl-line"></div></div><div class="tl-content"><div class="tl-time">9:42 AM · Today</div><div class="tl-text">Critical: Missing alt text on 8 product images</div><div class="tl-detail">Accessibility · WCAG 1.1.1 · Images</div></div></div>
+            <div class="tl-item"><div class="tl-left"><div class="tl-dot" style="color:#ea580c"></div><div class="tl-line"></div></div><div class="tl-content"><div class="tl-time">9:44 AM · Today</div><div class="tl-text">High: Color contrast ratio fails on 3 buttons</div><div class="tl-detail">Accessibility · WCAG 1.4.3 · Color Contrast</div></div></div>
+            <div class="tl-item"><div class="tl-left"><div class="tl-dot" style="color:#ca8a04"></div><div class="tl-line"></div></div><div class="tl-content"><div class="tl-time">9:46 AM · Today</div><div class="tl-text">Medium: Checkout form lacks error prevention</div><div class="tl-detail">UX Heuristics · H5: Error Prevention</div></div></div>
+            <div class="tl-item"><div class="tl-left"><div class="tl-dot" style="color:#dc2626"></div><div class="tl-line"></div></div><div class="tl-content"><div class="tl-time">9:47 AM · Today</div><div class="tl-text">Critical: Keyboard trap in modal dialog</div><div class="tl-detail">Accessibility · WCAG 2.1.2 · Keyboard Navigation</div></div></div>
+            <div class="tl-item"><div class="tl-left"><div class="tl-dot" style="color:#16a34a"></div><div class="tl-line"></div></div><div class="tl-content"><div class="tl-time">9:48 AM · Today</div><div class="tl-text">Audit completed successfully</div><div class="tl-detail">27 issues found · 3m 24s duration</div></div></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="section-h"><div class="section-title">Quick Actions</div></div>
+          <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px">
+            <button class="btn btn-primary" onclick="switchPage('reports',document.querySelector('[data-page=reports]'))"><svg style="width:15px;height:15px" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>View Full Report</button>
+            <button class="btn btn-secondary" onclick="showToast('PDF download started…')"><svg style="width:15px;height:15px" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>Download PDF</button>
+            <button class="btn btn-secondary" onclick="showToast('Exporting JSON…')"><svg style="width:15px;height:15px" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>Export JSON</button>
+            <button class="btn btn-secondary" onclick="showToast('Share link copied!')"><svg style="width:15px;height:15px" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>Share Report</button>
+          </div>
+          <div style="background:linear-gradient(135deg,#eff6ff,#f5f3ff);border:1px solid var(--blue-mid);border-radius:var(--radius);padding:14px">
+            <div style="font-size:13px;font-weight:700;color:var(--text-primary);margin-bottom:4px">🤖 AI Summary</div>
+            <div style="font-size:12.5px;color:var(--text-secondary);line-height:1.6">Your site scores <strong>B+</strong>. The most critical issues are missing image alt texts and color contrast failures. Fixing the 5 critical issues alone would raise your score to <strong>A−</strong>.</div>
+            <button class="btn btn-primary btn-sm" style="margin-top:10px" onclick="switchPage('chat',document.querySelector('[data-page=chat]'))">Ask AI Assistant →</button>
+          </div>
+        </div>
+      </div>
+    </div><!-- /dashboard -->
+
+    <!-- ════════════ PAGE: ACCESSIBILITY ════════════ -->
+    <div id="page-accessibility" class="page">
+      <!-- SCORE HERO -->
+      <div class="acc-score-hero">
+        <div style="text-align:center">
+          <div class="acc-score-big">71</div>
+          <div style="font-size:13px;font-weight:600;color:var(--text-secondary)">/100</div>
+        </div>
+        <div class="acc-progress-wrap">
+          <div class="acc-score-label">Accessibility Score — WCAG 2.1 Compliance</div>
+          <div style="display:flex;gap:14px;margin-bottom:10px;flex-wrap:wrap">
+            <span class="badge badge-critical">5 Critical</span>
+            <span class="badge badge-high">6 High</span>
+            <span class="badge badge-medium">3 Medium</span>
+            <span class="badge badge-low">2 Low</span>
+          </div>
+          <div class="progress-track" style="height:10px">
+            <div class="progress-fill" style="width:71%;background:linear-gradient(90deg,#2563eb,#7c3aed)"></div>
+          </div>
+          <div style="display:flex;justify-content:space-between;margin-top:8px;font-size:12px;color:var(--text-muted)">
+            <span>0</span><span>WCAG AA target: 85%</span><span>100</span>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;text-align:center">
+          <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:var(--radius-sm);padding:10px 14px"><div style="font-size:20px;font-weight:800;color:var(--green)">42</div><div style="font-size:11px;color:var(--green);font-weight:600">Passed</div></div>
+          <div style="background:#fefce8;border:1px solid #fde68a;border-radius:var(--radius-sm);padding:10px 14px"><div style="font-size:20px;font-weight:800;color:var(--yellow)">11</div><div style="font-size:11px;color:var(--yellow);font-weight:600">Warning</div></div>
+          <div style="background:#fef2f2;border:1px solid #fecaca;border-radius:var(--radius-sm);padding:10px 14px"><div style="font-size:20px;font-weight:800;color:var(--red)">14</div><div style="font-size:11px;color:var(--red);font-weight:600">Failed</div></div>
+        </div>
+      </div>
+
+      <!-- FILTERS -->
+      <div class="filter-bar">
+        <span style="font-size:12.5px;font-weight:600;color:var(--text-muted)">Filter:</span>
+        <span class="chip active" onclick="toggleChip(this)">All</span>
+        <span class="chip" onclick="toggleChip(this)">Critical Only</span>
+        <span class="chip" onclick="toggleChip(this)">Failed</span>
+        <span class="chip" onclick="toggleChip(this)">Passed</span>
+        <span class="chip" onclick="toggleChip(this)">WCAG Level A</span>
+        <span class="chip" onclick="toggleChip(this)">WCAG Level AA</span>
+        <span class="chip" onclick="toggleChip(this)">WCAG Level AAA</span>
+      </div>
+
+      <!-- CATEGORIES -->
+      <!-- Images -->
+      <div class="issue-cat">
+        <div class="issue-cat-header" onclick="toggleCat(this)">
+          <svg style="width:16px;height:16px;color:var(--text-muted);flex-shrink:0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          <span class="issue-cat-title">Images</span>
+          <div class="issue-cat-stats"><span class="badge badge-critical">2 Critical</span><span class="badge badge-info">8 Checks</span></div>
+          <svg class="expand-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="issue-cat-body">
+          <div class="issue-card">
+            <div class="issue-card-header">
+              <div style="flex:1">
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+                  <span class="badge badge-critical">Critical</span>
+                  <span class="wcag-ref">WCAG 1.1.1</span>
+                  <span style="font-size:11px;color:var(--text-muted)">Level A</span>
+                </div>
+                <div class="issue-card-title">Missing alt text on product images</div>
+              </div>
+              <div class="issue-thumb">
+                <svg style="width:24px;height:24px;color:#a5b4fc" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+              </div>
+            </div>
+            <div style="font-size:12.5px;color:var(--text-secondary);line-height:1.55;margin-bottom:10px">8 product images on the homepage and product listing page are missing descriptive alt text. Screen readers will announce them as empty or with their file name.</div>
+            <div class="issue-meta-grid">
+              <div class="issue-meta-item"><div class="issue-meta-label">Affected Element</div><div class="issue-meta-val">&lt;img src="product-hero.jpg"&gt;</div></div>
+              <div class="issue-meta-item"><div class="issue-meta-label">Current Value</div><div class="issue-meta-val">alt="" (empty)</div></div>
+              <div class="issue-meta-item"><div class="issue-meta-label">Expected Value</div><div class="issue-meta-val">alt="Product name description"</div></div>
+              <div class="issue-meta-item"><div class="issue-meta-label">Occurrences</div><div class="issue-meta-val">8 elements</div></div>
+            </div>
+            <div class="issue-solution">💡 <strong>Solution:</strong> Add descriptive alt text to each image element. For decorative images, use <code>alt=""</code>. For informative images, describe the content and function.</div>
+            <div class="issue-actions">
+              <button class="btn btn-primary btn-xs" onclick="switchPage('aifixes',document.querySelector('[data-page=aifixes]'))"><svg style="width:12px;height:12px" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>Show AI Fix</button>
+              <button class="btn btn-secondary btn-xs" onclick="showToast('Screenshot opened')"><svg style="width:12px;height:12px" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>View Screenshot</button>
+            </div>
+          </div>
+          <div class="issue-card">
+            <div class="issue-card-header">
+              <div style="flex:1">
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+                  <span class="badge badge-high">High</span>
+                  <span class="wcag-ref">WCAG 1.1.1</span>
+                  <span style="font-size:11px;color:var(--text-muted)">Level A</span>
+                </div>
+                <div class="issue-card-title">SVG icons missing accessible labels</div>
+              </div>
+              <div class="issue-thumb"><svg style="width:24px;height:24px;color:#a5b4fc" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
+            </div>
+            <div style="font-size:12.5px;color:var(--text-secondary);line-height:1.55;margin-bottom:10px">12 SVG icon buttons in the navigation have no aria-label or title attributes. Screen reader users cannot determine their purpose.</div>
+            <div class="issue-meta-grid">
+              <div class="issue-meta-item"><div class="issue-meta-label">Affected Element</div><div class="issue-meta-val">&lt;svg role="button"&gt;</div></div>
+              <div class="issue-meta-item"><div class="issue-meta-label">Current Value</div><div class="issue-meta-val">No label</div></div>
+              <div class="issue-meta-item"><div class="issue-meta-label">Expected Value</div><div class="issue-meta-val">aria-label="Search"</div></div>
+              <div class="issue-meta-item"><div class="issue-meta-label">Occurrences</div><div class="issue-meta-val">12 elements</div></div>
+            </div>
+            <div class="issue-solution">💡 <strong>Solution:</strong> Add <code>aria-label</code> or a visually hidden <code>&lt;title&gt;</code> element inside each SVG. Use <code>role="img"</code> for decorative SVGs with <code>aria-hidden="true"</code>.</div>
+            <div class="issue-actions">
+              <button class="btn btn-primary btn-xs" onclick="switchPage('aifixes',document.querySelector('[data-page=aifixes]'))">Show AI Fix</button>
+              <button class="btn btn-secondary btn-xs" onclick="showToast('Screenshot opened')">View Screenshot</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Color Contrast -->
+      <div class="issue-cat">
+        <div class="issue-cat-header" onclick="toggleCat(this)">
+          <svg style="width:16px;height:16px;color:var(--text-muted)" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="13.5" cy="6.5" r=".5"/><circle cx="17.5" cy="10.5" r=".5"/><circle cx="8.5" cy="7.5" r=".5"/><circle cx="6.5" cy="12.5" r=".5"/><path stroke-linecap="round" stroke-linejoin="round" d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10c.926 0 1.671-.754 1.671-1.682 0-.423-.162-.826-.44-1.12-.278-.292-.42-.694-.42-1.098 0-.834.669-1.5 1.5-1.5H16c2.761 0 5-2.24 5-5 0-4.42-4.03-8-9-8z"/></svg>
+          <span class="issue-cat-title">Color Contrast</span>
+          <div class="issue-cat-stats"><span class="badge badge-critical">1 Critical</span><span class="badge badge-high">2 High</span></div>
+          <svg class="expand-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="issue-cat-body">
+          <div class="issue-card">
+            <div class="issue-card-header">
+              <div style="flex:1">
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+                  <span class="badge badge-critical">Critical</span>
+                  <span class="wcag-ref">WCAG 1.4.3</span>
+                  <span style="font-size:11px;color:var(--text-muted)">Level AA</span>
+                </div>
+                <div class="issue-card-title">Primary CTA button has insufficient contrast ratio</div>
+              </div>
+              <div class="issue-thumb" style="background:linear-gradient(135deg,#6ee7b7,#34d399)">
+                <span style="font-size:10px;color:#fff;font-weight:700;padding:4px 8px;background:rgba(0,0,0,.2);border-radius:4px">AA Fail</span>
+              </div>
+            </div>
+            <div style="font-size:12.5px;color:var(--text-secondary);line-height:1.55;margin-bottom:10px">The "Get Started" button uses a light green (#86efac) background with white text. The contrast ratio is 1.89:1, far below the required 4.5:1 minimum for normal text.</div>
+            <div class="issue-meta-grid">
+              <div class="issue-meta-item"><div class="issue-meta-label">Affected Element</div><div class="issue-meta-val">&lt;button class="cta-btn"&gt;</div></div>
+              <div class="issue-meta-item"><div class="issue-meta-label">Current Ratio</div><div class="issue-meta-val" style="color:var(--red)">1.89:1 ✗</div></div>
+              <div class="issue-meta-item"><div class="issue-meta-label">Required Ratio</div><div class="issue-meta-val" style="color:var(--green)">4.5:1 minimum</div></div>
+              <div class="issue-meta-item"><div class="issue-meta-label">Affected Pages</div><div class="issue-meta-val">Homepage, Pricing</div></div>
+            </div>
+            <div class="issue-solution">💡 <strong>Solution:</strong> Change button background to <code>#16a34a</code> (dark green) or text color to <code>#14532d</code>. Use the WebAIM Contrast Checker to verify the final ratio exceeds 4.5:1.</div>
+            <div class="issue-actions">
+              <button class="btn btn-primary btn-xs" onclick="switchPage('aifixes',document.querySelector('[data-page=aifixes]'))">Show AI Fix</button>
+              <button class="btn btn-secondary btn-xs">View Screenshot</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Keyboard Navigation -->
+      <div class="issue-cat">
+        <div class="issue-cat-header" onclick="toggleCat(this)">
+          <svg style="width:16px;height:16px;color:var(--text-muted)" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2" ry="2"/><path stroke-linecap="round" stroke-linejoin="round" d="M6 8h.01M10 8h.01M14 8h.01M18 8h.01M8 12h.01M12 12h.01M16 12h.01M7 16h10"/></svg>
+          <span class="issue-cat-title">Keyboard Navigation</span>
+          <div class="issue-cat-stats"><span class="badge badge-critical">2 Critical</span></div>
+          <svg class="expand-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="issue-cat-body">
+          <div class="issue-card">
+            <div class="issue-card-header">
+              <div style="flex:1">
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+                  <span class="badge badge-critical">Critical</span>
+                  <span class="wcag-ref">WCAG 2.1.2</span>
+                  <span style="font-size:11px;color:var(--text-muted)">Level A</span>
+                </div>
+                <div class="issue-card-title">Keyboard focus trapped in cookie consent modal</div>
+              </div>
+              <div class="issue-thumb"><svg style="width:22px;height:22px;color:#a5b4fc" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/></svg></div>
+            </div>
+            <div style="font-size:12.5px;color:var(--text-secondary);line-height:1.55;margin-bottom:10px">Once the cookie consent modal opens, keyboard users cannot escape it using the Tab key, Escape key, or any standard keyboard interaction. They are permanently trapped.</div>
+            <div class="issue-meta-grid">
+              <div class="issue-meta-item"><div class="issue-meta-label">Affected Element</div><div class="issue-meta-val">#cookie-consent-modal</div></div>
+              <div class="issue-meta-item"><div class="issue-meta-label">Trigger</div><div class="issue-meta-val">Page load</div></div>
+              <div class="issue-meta-item"><div class="issue-meta-label">Expected Behavior</div><div class="issue-meta-val">Esc closes modal</div></div>
+              <div class="issue-meta-item"><div class="issue-meta-label">Severity</div><div class="issue-meta-val" style="color:var(--red)">Blocker</div></div>
+            </div>
+            <div class="issue-solution">💡 <strong>Solution:</strong> Implement focus trap management: cycle focus within modal, allow Escape to close, return focus to trigger element on close. Use <code>aria-modal="true"</code> and proper focus management.</div>
+            <div class="issue-actions">
+              <button class="btn btn-primary btn-xs" onclick="switchPage('aifixes',document.querySelector('[data-page=aifixes]'))">Show AI Fix</button>
+              <button class="btn btn-secondary btn-xs">View Screenshot</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ARIA, Forms, etc. collapsed -->
+      <div class="issue-cat">
+        <div class="issue-cat-header" onclick="toggleCat(this)">
+          <svg style="width:16px;height:16px;color:var(--text-muted)" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+          <span class="issue-cat-title">Forms</span>
+          <div class="issue-cat-stats"><span class="badge badge-high">1 High</span><span class="badge badge-medium">2 Medium</span></div>
+          <svg class="expand-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="issue-cat-body">
+          <div class="issue-card">
+            <div class="issue-card-header"><div style="flex:1"><div style="display:flex;align-items:center;gap:8px;margin-bottom:6px"><span class="badge badge-high">High</span><span class="wcag-ref">WCAG 1.3.1</span><span style="font-size:11px;color:var(--text-muted)">Level A</span></div><div class="issue-card-title">Signup form inputs missing associated labels</div></div><div class="issue-thumb"><svg style="width:22px;height:22px;color:#a5b4fc" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></div></div>
+            <div style="font-size:12.5px;color:var(--text-secondary);line-height:1.55">Placeholder text is used instead of proper label elements for the email and password fields in the signup form. Screen readers may not announce field purpose.</div>
+            <div class="issue-actions" style="margin-top:10px"><button class="btn btn-primary btn-xs" onclick="switchPage('aifixes',document.querySelector('[data-page=aifixes]'))">Show AI Fix</button><button class="btn btn-secondary btn-xs">View Screenshot</button></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="issue-cat">
+        <div class="issue-cat-header" onclick="toggleCat(this)">
+          <svg style="width:16px;height:16px;color:var(--text-muted)" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"/></svg>
+          <span class="issue-cat-title">ARIA Attributes</span>
+          <div class="issue-cat-stats"><span class="badge badge-medium">3 Medium</span><span class="badge badge-pass">6 Passed</span></div>
+          <svg class="expand-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="issue-cat-body">
+          <div class="issue-card">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><span class="badge badge-medium">Medium</span><span class="wcag-ref">WCAG 4.1.2</span></div>
+            <div class="issue-card-title">Dropdown menu missing aria-expanded state</div>
+            <div style="font-size:12.5px;color:var(--text-secondary);line-height:1.55;margin-top:6px">The main navigation dropdown menus do not update aria-expanded attribute when opened or closed, failing to communicate state to assistive technology.</div>
+            <div class="issue-actions" style="margin-top:10px"><button class="btn btn-primary btn-xs">Show AI Fix</button><button class="btn btn-secondary btn-xs">View Screenshot</button></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Remaining categories collapsed by default -->
+      <div class="issue-cat"><div class="issue-cat-header" onclick="toggleCat(this)"><svg style="width:16px;height:16px;color:var(--text-muted)" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h8m-8 6h16"/></svg><span class="issue-cat-title">Headings</span><div class="issue-cat-stats"><span class="badge badge-medium">1 Medium</span><span class="badge badge-pass">7 Passed</span></div><svg class="expand-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></div><div class="issue-cat-body"><div class="issue-card"><div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><span class="badge badge-medium">Medium</span><span class="wcag-ref">WCAG 1.3.1</span></div><div class="issue-card-title">Heading hierarchy skips from H1 to H4 on blog pages</div><div style="font-size:12.5px;color:var(--text-secondary);margin-top:6px;line-height:1.55">Skipping heading levels disrupts the document outline and confuses screen reader users navigating by headings.</div><div class="issue-actions" style="margin-top:10px"><button class="btn btn-primary btn-xs">Show AI Fix</button><button class="btn btn-secondary btn-xs">View Screenshot</button></div></div></div></div>
+      <div class="issue-cat"><div class="issue-cat-header" onclick="toggleCat(this)"><svg style="width:16px;height:16px;color:var(--text-muted)" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polyline points="4 7 4 4 20 4 20 7"/><line x1="9" y1="20" x2="15" y2="20"/><line x1="12" y1="4" x2="12" y2="20"/></svg><span class="issue-cat-title">Typography</span><div class="issue-cat-stats"><span class="badge badge-low">1 Low</span><span class="badge badge-pass">5 Passed</span></div><svg class="expand-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></div><div class="issue-cat-body"><div class="issue-card"><div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><span class="badge badge-low">Low</span><span class="wcag-ref">WCAG 1.4.12</span></div><div class="issue-card-title">Small print text below 12px minimum on mobile</div><div style="font-size:12.5px;color:var(--text-secondary);margin-top:6px;line-height:1.55">Footer legal text renders at 10px on mobile devices, below the recommended minimum of 12px for body text readability.</div><div class="issue-actions" style="margin-top:10px"><button class="btn btn-primary btn-xs">Show AI Fix</button><button class="btn btn-secondary btn-xs">View Screenshot</button></div></div></div></div>
+      <div class="issue-cat"><div class="issue-cat-header" onclick="toggleCat(this)"><svg style="width:16px;height:16px;color:var(--text-muted)" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg><span class="issue-cat-title">Focus Indicators</span><div class="issue-cat-stats"><span class="badge badge-high">2 High</span></div><svg class="expand-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></div><div class="issue-cat-body"><div class="issue-card"><div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><span class="badge badge-high">High</span><span class="wcag-ref">WCAG 2.4.7</span></div><div class="issue-card-title">Focus ring removed with outline:none on all interactive elements</div><div style="font-size:12.5px;color:var(--text-secondary);margin-top:6px;line-height:1.55">A global CSS rule <code>* { outline: none }</code> removes focus indicators from all focusable elements, making keyboard navigation invisible.</div><div class="issue-actions" style="margin-top:10px"><button class="btn btn-primary btn-xs">Show AI Fix</button><button class="btn btn-secondary btn-xs">View Screenshot</button></div></div></div></div>
+      <div class="issue-cat"><div class="issue-cat-header" onclick="toggleCat(this)"><svg style="width:16px;height:16px;color:var(--text-muted)" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"/></svg><span class="issue-cat-title">Page Language</span><div class="issue-cat-stats"><span class="badge badge-pass">Passed</span></div><svg class="expand-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></div><div class="issue-cat-body"><div class="issue-card" style="border-color:#bbf7d0"><div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><span class="badge badge-pass">Passed</span><span class="wcag-ref">WCAG 3.1.1</span></div><div class="issue-card-title">HTML lang attribute correctly set to "en"</div><div style="font-size:12.5px;color:var(--text-secondary);margin-top:6px">All pages correctly specify <code>&lt;html lang="en"&gt;</code>. No issues found.</div></div></div></div>
+      <div class="issue-cat"><div class="issue-cat-header" onclick="toggleCat(this)"><svg style="width:16px;height:16px;color:var(--text-muted)" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg><span class="issue-cat-title">Touch Targets</span><div class="issue-cat-stats"><span class="badge badge-medium">1 Medium</span></div><svg class="expand-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></div><div class="issue-cat-body"><div class="issue-card"><div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><span class="badge badge-medium">Medium</span><span class="wcag-ref">WCAG 2.5.5</span></div><div class="issue-card-title">Social share buttons below 44x44px minimum touch target</div><div style="font-size:12.5px;color:var(--text-secondary);margin-top:6px;line-height:1.55">Social sharing icons in the blog sidebar are 28x28px, below the WCAG 2.5.5 AAA recommendation of 44x44px and the practical mobile minimum.</div><div class="issue-actions" style="margin-top:10px"><button class="btn btn-primary btn-xs">Show AI Fix</button><button class="btn btn-secondary btn-xs">View Screenshot</button></div></div></div></div>
+      <div class="issue-cat"><div class="issue-cat-header" onclick="toggleCat(this)"><svg style="width:16px;height:16px;color:var(--text-muted)" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg><span class="issue-cat-title">Semantic HTML</span><div class="issue-cat-stats"><span class="badge badge-medium">1 Medium</span><span class="badge badge-pass">8 Passed</span></div><svg class="expand-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></div><div class="issue-cat-body"><div class="issue-card"><div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><span class="badge badge-medium">Medium</span><span class="wcag-ref">WCAG 1.3.1</span></div><div class="issue-card-title">Navigation uses div elements instead of &lt;nav&gt;</div><div style="font-size:12.5px;color:var(--text-secondary);margin-top:6px;line-height:1.55">Main site navigation uses &lt;div class="nav"&gt; rather than the semantic &lt;nav&gt; element, reducing landmark navigation for screen reader users.</div><div class="issue-actions" style="margin-top:10px"><button class="btn btn-primary btn-xs">Show AI Fix</button><button class="btn btn-secondary btn-xs">View Screenshot</button></div></div></div></div>
+    </div><!-- /accessibility -->
+
+    <!-- ════════════ PAGE: UX HEURISTICS ════════════ -->
+    <div id="page-heuristics" class="page">
+      <div style="display:flex;align-items:center;gap:16px;margin-bottom:22px;flex-wrap:wrap">
+        <div class="card card-sm" style="flex:1;min-width:160px;background:linear-gradient(135deg,#eff6ff,#f5f3ff);border-color:var(--blue-mid)">
+          <div style="font-size:12px;color:var(--text-muted);font-weight:500;margin-bottom:4px">Overall Usability</div>
+          <div style="font-size:38px;font-weight:800;color:var(--blue)">82</div>
+          <div style="font-size:12px;color:var(--text-secondary)">Heuristic Score /100</div>
+        </div>
+        <div class="card card-sm" style="flex:1;min-width:140px">
+          <div style="font-size:12px;color:var(--text-muted);font-weight:500;margin-bottom:4px">Issues Found</div>
+          <div style="font-size:38px;font-weight:800;color:var(--orange)">18</div>
+          <div style="font-size:12px;color:var(--text-secondary)">Across 7 heuristics</div>
+        </div>
+        <div class="card card-sm" style="flex:1;min-width:140px">
+          <div style="font-size:12px;color:var(--text-muted);font-weight:500;margin-bottom:4px">Avg Confidence</div>
+          <div style="font-size:38px;font-weight:800;color:var(--green)">87%</div>
+          <div style="font-size:12px;color:var(--text-secondary)">AI analysis accuracy</div>
+        </div>
+        <div class="card card-sm" style="flex:1;min-width:140px">
+          <div style="font-size:12px;color:var(--text-muted);font-weight:500;margin-bottom:4px">Heuristics Passed</div>
+          <div style="font-size:38px;font-weight:800;color:var(--purple)">6/10</div>
+          <div style="font-size:12px;color:var(--text-secondary)">Nielsen's 10 principles</div>
+        </div>
+      </div>
+
+      <!-- Trend chart -->
+      <div class="card" style="margin-bottom:22px">
+        <div class="section-h"><div><div class="section-title">Usability Trend</div><div class="section-sub">Score progression over last 6 audits</div></div></div>
+        <canvas id="trendChart" height="100"></canvas>
+      </div>
+
+      <!-- HEURISTIC CARDS GRID -->
+      <div class="grid-2" style="gap:14px">
+        <!-- H1 -->
+        <div class="heuristic-card" style="border-left:3px solid #22c55e">
+          <div class="heuristic-num">Heuristic #1</div>
+          <div class="heuristic-title">Visibility of System Status</div>
+          <div class="heuristic-score-row"><div class="h-score-num" style="color:#22c55e">88</div><div class="h-score-max">/100</div><span class="badge badge-pass" style="margin-left:auto">3 issues</span></div>
+          <div class="h-conf">Confidence: <strong>91%</strong></div>
+          <div class="progress-track" style="margin:8px 0"><div class="progress-fill" style="width:88%;background:#22c55e"></div></div>
+          <div class="h-ai-text">The system generally keeps users informed, but loading states on the checkout process lack clear progress indicators. The file upload component shows no progress feedback during longer uploads.</div>
+          <div style="margin-top:10px;font-size:12px;color:var(--text-muted);font-weight:600">SUGGESTED IMPROVEMENTS</div>
+          <ul style="margin-top:4px;font-size:12.5px;color:var(--text-secondary);padding-left:16px;line-height:1.8">
+            <li>Add skeleton loaders to product listing pages</li>
+            <li>Implement progress bars for multi-step checkout</li>
+            <li>Show upload progress percentage in real-time</li>
+          </ul>
+        </div>
+        <!-- H2 -->
+        <div class="heuristic-card" style="border-left:3px solid #3b82f6">
+          <div class="heuristic-num">Heuristic #2</div>
+          <div class="heuristic-title">Match Between System & Real World</div>
+          <div class="heuristic-score-row"><div class="h-score-num" style="color:#3b82f6">85</div><div class="h-score-max">/100</div><span class="badge badge-info" style="margin-left:auto">2 issues</span></div>
+          <div class="h-conf">Confidence: <strong>88%</strong></div>
+          <div class="progress-track" style="margin:8px 0"><div class="progress-fill" style="width:85%;background:#3b82f6"></div></div>
+          <div class="h-ai-text">Language is generally user-friendly. Technical jargon appears in error messages (e.g., "HTTP 422 Unprocessable Entity") and the dashboard uses internal product codes (SKU-4821) without explanation.</div>
+          <ul style="margin-top:6px;font-size:12.5px;color:var(--text-secondary);padding-left:16px;line-height:1.8">
+            <li>Replace HTTP error codes with plain language messages</li>
+            <li>Add tooltips explaining technical terms</li>
+          </ul>
+        </div>
+        <!-- H3 -->
+        <div class="heuristic-card" style="border-left:3px solid #f59e0b">
+          <div class="heuristic-num">Heuristic #3</div>
+          <div class="heuristic-title">User Control & Freedom</div>
+          <div class="heuristic-score-row"><div class="h-score-num" style="color:#f59e0b">72</div><div class="h-score-max">/100</div><span class="badge badge-warn" style="margin-left:auto">4 issues</span></div>
+          <div class="h-conf">Confidence: <strong>85%</strong></div>
+          <div class="progress-track" style="margin:8px 0"><div class="progress-fill" style="width:72%;background:#f59e0b"></div></div>
+          <div class="h-ai-text">Users cannot undo account deletion within a grace period. The checkout process has no "Back" button between payment and review steps, forcing users to start over. Bulk actions lack confirmation dialogs.</div>
+          <ul style="margin-top:6px;font-size:12.5px;color:var(--text-secondary);padding-left:16px;line-height:1.8">
+            <li>Add "Undo" with 30-second grace period for destructive actions</li>
+            <li>Implement breadcrumb navigation in multi-step flows</li>
+            <li>Add Back button to all checkout steps</li>
+          </ul>
+        </div>
+        <!-- H4 -->
+        <div class="heuristic-card" style="border-left:3px solid #22c55e">
+          <div class="heuristic-num">Heuristic #4</div>
+          <div class="heuristic-title">Consistency & Standards</div>
+          <div class="heuristic-score-row"><div class="h-score-num" style="color:#22c55e">90</div><div class="h-score-max">/100</div><span class="badge badge-pass" style="margin-left:auto">1 issue</span></div>
+          <div class="h-conf">Confidence: <strong>93%</strong></div>
+          <div class="progress-track" style="margin:8px 0"><div class="progress-fill" style="width:90%;background:#22c55e"></div></div>
+          <div class="h-ai-text">The UI maintains consistent patterns throughout. Minor inconsistency: "Cancel" button is on the left in most dialogs but on the right in the payment flow, violating the established pattern.</div>
+          <ul style="margin-top:6px;font-size:12.5px;color:var(--text-secondary);padding-left:16px;line-height:1.8"><li>Standardize Cancel/Confirm button order across all dialogs</li></ul>
+        </div>
+        <!-- H5 -->
+        <div class="heuristic-card" style="border-left:3px solid #ef4444">
+          <div class="heuristic-num">Heuristic #5</div>
+          <div class="heuristic-title">Error Prevention</div>
+          <div class="heuristic-score-row"><div class="h-score-num" style="color:#ef4444">61</div><div class="h-score-max">/100</div><span class="badge badge-critical" style="margin-left:auto">5 issues</span></div>
+          <div class="h-conf">Confidence: <strong>82%</strong></div>
+          <div class="progress-track" style="margin:8px 0"><div class="progress-fill" style="width:61%;background:#ef4444"></div></div>
+          <div class="h-ai-text">Critical: The checkout form allows users to proceed with invalid credit card numbers. The email field accepts malformed addresses. No inline validation is present until final submit, causing user frustration and high abandonment.</div>
+          <ul style="margin-top:6px;font-size:12.5px;color:var(--text-secondary);padding-left:16px;line-height:1.8">
+            <li>Add real-time inline validation to all form fields</li>
+            <li>Implement Luhn algorithm check for credit card numbers</li>
+            <li>Add confirmation dialog before irreversible actions</li>
+            <li>Auto-format phone numbers and credit card inputs</li>
+          </ul>
+        </div>
+        <!-- H6 -->
+        <div class="heuristic-card" style="border-left:3px solid #3b82f6">
+          <div class="heuristic-num">Heuristic #6</div>
+          <div class="heuristic-title">Recognition Rather Than Recall</div>
+          <div class="heuristic-score-row"><div class="h-score-num" style="color:#3b82f6">79</div><div class="h-score-max">/100</div><span class="badge badge-warn" style="margin-left:auto">3 issues</span></div>
+          <div class="h-conf">Confidence: <strong>86%</strong></div>
+          <div class="progress-track" style="margin:8px 0"><div class="progress-fill" style="width:79%;background:#3b82f6"></div></div>
+          <div class="h-ai-text">Search results have no recent search history or suggestions. The settings page requires users to remember where they previously changed preferences. Dashboard lacks contextual help icons.</div>
+          <ul style="margin-top:6px;font-size:12.5px;color:var(--text-secondary);padding-left:16px;line-height:1.8">
+            <li>Add recent searches and typeahead suggestions</li>
+            <li>Add breadcrumbs to all settings sub-pages</li>
+            <li>Add contextual tooltips to all dashboard metrics</li>
+          </ul>
+        </div>
+        <!-- H7 -->
+        <div class="heuristic-card" style="border-left:3px solid #22c55e">
+          <div class="heuristic-num">Heuristic #7</div>
+          <div class="heuristic-title">Flexibility & Efficiency of Use</div>
+          <div class="heuristic-score-row"><div class="h-score-num" style="color:#22c55e">87</div><div class="h-score-max">/100</div><span class="badge badge-pass" style="margin-left:auto">1 issue</span></div>
+          <div class="h-conf">Confidence: <strong>90%</strong></div>
+          <div class="progress-track" style="margin:8px 0"><div class="progress-fill" style="width:87%;background:#22c55e"></div></div>
+          <div class="h-ai-text">Good keyboard shortcut support. No keyboard shortcut documentation visible to novice users. Power users would benefit from a command palette (Cmd+K).</div>
+          <ul style="margin-top:6px;font-size:12.5px;color:var(--text-secondary);padding-left:16px;line-height:1.8"><li>Add a command palette accessible via Cmd+K</li><li>Add a "keyboard shortcuts" help modal</li></ul>
+        </div>
+        <!-- H8 -->
+        <div class="heuristic-card" style="border-left:3px solid #22c55e">
+          <div class="heuristic-num">Heuristic #8</div>
+          <div class="heuristic-title">Aesthetic & Minimalist Design</div>
+          <div class="heuristic-score-row"><div class="h-score-num" style="color:#22c55e">91</div><div class="h-score-max">/100</div><span class="badge badge-pass" style="margin-left:auto">1 issue</span></div>
+          <div class="h-conf">Confidence: <strong>94%</strong></div>
+          <div class="progress-track" style="margin:8px 0"><div class="progress-fill" style="width:91%;background:#22c55e"></div></div>
+          <div class="h-ai-text">Clean, modern design with excellent visual hierarchy. The pricing page contains too many competing CTA buttons. The footer has 47 links which creates visual noise.</div>
+          <ul style="margin-top:6px;font-size:12.5px;color:var(--text-secondary);padding-left:16px;line-height:1.8"><li>Reduce footer links to primary navigation only</li><li>Single primary CTA per pricing tier</li></ul>
+        </div>
+        <!-- H9 -->
+        <div class="heuristic-card" style="border-left:3px solid #f59e0b">
+          <div class="heuristic-num">Heuristic #9</div>
+          <div class="heuristic-title">Help Users Recognize & Recover from Errors</div>
+          <div class="heuristic-score-row"><div class="h-score-num" style="color:#f59e0b">74</div><div class="h-score-max">/100</div><span class="badge badge-warn" style="margin-left:auto">3 issues</span></div>
+          <div class="h-conf">Confidence: <strong>84%</strong></div>
+          <div class="progress-track" style="margin:8px 0"><div class="progress-fill" style="width:74%;background:#f59e0b"></div></div>
+          <div class="h-ai-text">Error messages on the login page say "Invalid credentials" without specifying which field failed. Payment errors show generic "Transaction failed" without explaining reason or next steps.</div>
+          <ul style="margin-top:6px;font-size:12.5px;color:var(--text-secondary);padding-left:16px;line-height:1.8">
+            <li>Provide specific field-level error messages</li>
+            <li>Include recovery suggestions in all error states</li>
+            <li>Add "Forgot Password?" link directly in error message</li>
+          </ul>
+        </div>
+        <!-- H10 -->
+        <div class="heuristic-card" style="border-left:3px solid #f59e0b">
+          <div class="heuristic-num">Heuristic #10</div>
+          <div class="heuristic-title">Help & Documentation</div>
+          <div class="heuristic-score-row"><div class="h-score-num" style="color:#f59e0b">68</div><div class="h-score-max">/100</div><span class="badge badge-warn" style="margin-left:auto">3 issues</span></div>
+          <div class="h-conf">Confidence: <strong>81%</strong></div>
+          <div class="progress-track" style="margin:8px 0"><div class="progress-fill" style="width:68%;background:#f59e0b"></div></div>
+          <div class="h-ai-text">No in-context help is available in the complex settings sections. The API documentation link is buried in the footer. New user onboarding lacks a guided tour or interactive tutorial.</div>
+          <ul style="margin-top:6px;font-size:12.5px;color:var(--text-secondary);padding-left:16px;line-height:1.8">
+            <li>Add contextual help tooltips throughout settings</li>
+            <li>Implement an onboarding walkthrough for new users</li>
+            <li>Move documentation link to primary navigation</li>
+            <li>Add in-app help panel accessible from every page</li>
+          </ul>
+        </div>
+      </div>
+    </div><!-- /heuristics -->
+
+    <!-- ════════════ PAGE: USER JOURNEY ════════════ -->
+    <div id="page-journey" class="page">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px">
+        <div>
+          <div style="font-size:16px;font-weight:700;color:var(--text-primary)">User Journey Analysis</div>
+          <div style="font-size:13px;color:var(--text-muted)">Interactive flow — click any step for detailed analysis</div>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <span class="badge badge-pass">3 Success</span>
+          <span class="badge badge-warn">3 Warning</span>
+          <span class="badge badge-fail">2 Failed</span>
+          <span class="badge badge-info">Avg Drop-off: 12%</span>
+        </div>
+      </div>
+
+      <!-- FLOW -->
+      <div class="card" style="margin-bottom:16px;overflow-x:auto">
+        <div class="journey-flow" id="journeyFlow">
+          <!-- Homepage -->
+          <div class="journey-step">
+            <div class="journey-step-card success active-step" onclick="openJourneyStep(this,'homepage')">
+              <div class="journey-icon" style="background:#dcfce7">🏠</div>
+              <div class="journey-step-name">Homepage</div>
+              <div class="journey-step-status" style="color:#16a34a">✓ Success</div>
+              <div style="font-size:10.5px;color:var(--text-muted);margin-top:4px">2.1s · 0 clicks</div>
+            </div>
+          </div>
+          <div class="journey-arrow"><svg style="width:20px;height:20px" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></div>
+          <!-- Navigation -->
+          <div class="journey-step">
+            <div class="journey-step-card success" onclick="openJourneyStep(this,'navigation')">
+              <div class="journey-icon" style="background:#dcfce7">🧭</div>
+              <div class="journey-step-name">Navigation</div>
+              <div class="journey-step-status" style="color:#16a34a">✓ Success</div>
+              <div style="font-size:10.5px;color:var(--text-muted);margin-top:4px">1.4s · 3 clicks</div>
+            </div>
+          </div>
+          <div class="journey-arrow"><svg style="width:20px;height:20px" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></div>
+          <!-- Pricing -->
+          <div class="journey-step">
+            <div class="journey-step-card warning" onclick="openJourneyStep(this,'pricing')">
+              <div class="journey-icon" style="background:#fef9c3">💰</div>
+              <div class="journey-step-name">Pricing</div>
+              <div class="journey-step-status" style="color:#ca8a04">⚠ Warning</div>
+              <div style="font-size:10.5px;color:var(--text-muted);margin-top:4px">4.7s · 6 clicks</div>
+            </div>
+          </div>
+          <div class="journey-arrow"><svg style="width:20px;height:20px" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></div>
+          <!-- Signup -->
+          <div class="journey-step">
+            <div class="journey-step-card warning" onclick="openJourneyStep(this,'signup')">
+              <div class="journey-icon" style="background:#fef9c3">📝</div>
+              <div class="journey-step-name">Signup</div>
+              <div class="journey-step-status" style="color:#ca8a04">⚠ Warning</div>
+              <div style="font-size:10.5px;color:var(--text-muted);margin-top:4px">3.2s · 12 clicks</div>
+            </div>
+          </div>
+          <div class="journey-arrow"><svg style="width:20px;height:20px" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></div>
+          <!-- Login -->
+          <div class="journey-step">
+            <div class="journey-step-card success" onclick="openJourneyStep(this,'login')">
+              <div class="journey-icon" style="background:#dcfce7">🔐</div>
+              <div class="journey-step-name">Login</div>
+              <div class="journey-step-status" style="color:#16a34a">✓ Success</div>
+              <div style="font-size:10.5px;color:var(--text-muted);margin-top:4px">1.8s · 4 clicks</div>
+            </div>
+          </div>
+          <div class="journey-arrow"><svg style="width:20px;height:20px" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></div>
+          <!-- Checkout -->
+          <div class="journey-step">
+            <div class="journey-step-card failed" onclick="openJourneyStep(this,'checkout')">
+              <div class="journey-icon" style="background:#fee2e2">🛒</div>
+              <div class="journey-step-name">Checkout</div>
+              <div class="journey-step-status" style="color:#dc2626">✗ Failed</div>
+              <div style="font-size:10.5px;color:var(--text-muted);margin-top:4px">9.3s · 18 clicks</div>
+            </div>
+          </div>
+          <div class="journey-arrow"><svg style="width:20px;height:20px" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></div>
+          <!-- Payment -->
+          <div class="journey-step">
+            <div class="journey-step-card failed" onclick="openJourneyStep(this,'payment')">
+              <div class="journey-icon" style="background:#fee2e2">💳</div>
+              <div class="journey-step-name">Payment</div>
+              <div class="journey-step-status" style="color:#dc2626">✗ Failed</div>
+              <div style="font-size:10.5px;color:var(--text-muted);margin-top:4px">12.1s · 22 clicks</div>
+            </div>
+          </div>
+          <div class="journey-arrow"><svg style="width:20px;height:20px" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></div>
+          <!-- Confirmation -->
+          <div class="journey-step">
+            <div class="journey-step-card warning" onclick="openJourneyStep(this,'confirmation')">
+              <div class="journey-icon" style="background:#fef9c3">✅</div>
+              <div class="journey-step-name">Confirmation</div>
+              <div class="journey-step-status" style="color:#ca8a04">⚠ Warning</div>
+              <div style="font-size:10.5px;color:var(--text-muted);margin-top:4px">2.4s · 2 clicks</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP DETAIL -->
+      <div id="journeyDetail" class="journey-detail">
+        <div id="journeyDetailContent"></div>
+      </div>
+
+      <!-- METRICS GRID -->
+      <div class="grid-4" style="margin-top:16px">
+        <div class="card card-sm"><div style="font-size:11px;color:var(--text-muted);font-weight:600;margin-bottom:4px;text-transform:uppercase">Total Duration</div><div style="font-size:26px;font-weight:800;color:var(--text-primary)">36.8s</div><div style="font-size:12px;color:var(--text-secondary)">Full journey time</div></div>
+        <div class="card card-sm"><div style="font-size:11px;color:var(--text-muted);font-weight:600;margin-bottom:4px;text-transform:uppercase">Total Clicks</div><div style="font-size:26px;font-weight:800;color:var(--text-primary)">67</div><div style="font-size:12px;color:var(--text-secondary)">All interactions</div></div>
+        <div class="card card-sm" style="border-color:#fecaca"><div style="font-size:11px;color:var(--red);font-weight:700;margin-bottom:4px;text-transform:uppercase">Max Drop-off</div><div style="font-size:26px;font-weight:800;color:var(--red)">34%</div><div style="font-size:12px;color:var(--text-secondary)">At Payment step</div></div>
+        <div class="card card-sm" style="border-color:#fecaca"><div style="font-size:11px;color:var(--red);font-weight:700;margin-bottom:4px;text-transform:uppercase">Avg Friction</div><div style="font-size:26px;font-weight:800;color:var(--orange)">6.2</div><div style="font-size:12px;color:var(--text-secondary)">/10 score</div></div>
+      </div>
+    </div><!-- /journey -->
+
+    <!-- ════════════ PAGE: AI FIXES ════════════ -->
+    <div id="page-aifixes" class="page">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px">
+        <div>
+          <div style="font-size:16px;font-weight:700;color:var(--text-primary)">AI-Generated Fixes</div>
+          <div style="font-size:13px;color:var(--text-muted)">Code solutions with before/after comparisons</div>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <span class="badge badge-verified">5 Verified</span>
+          <span class="badge badge-warn">12 Pending Review</span>
+          <span class="badge badge-info">17 Total Fixes</span>
+        </div>
+      </div>
+
+      <!-- FIX 1 -->
+      <div class="fix-card">
+        <div class="fix-card-header">
+          <div style="width:38px;height:38px;background:#fef2f2;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+            <svg style="width:18px;height:18px;color:#dc2626" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          </div>
+          <div style="flex:1">
+            <div class="fix-card-title">Fix Missing Alt Text on Product Images</div>
+            <div style="font-size:12px;color:var(--text-secondary)">WCAG 1.1.1 · Images</div>
+          </div>
+          <span class="badge badge-critical">Critical</span>
+          <span class="badge badge-verified">✓ Verified</span>
+        </div>
+        <div class="fix-meta-row">
+          <div class="fix-meta-item"><strong>Est. Fix Time:</strong> 30 mins</div>
+          <div class="fix-meta-item"><strong>Difficulty:</strong> <span style="color:#16a34a">Easy</span></div>
+          <div class="fix-meta-item"><strong>UX Improvement:</strong> <span style="color:#16a34a">+4 score points</span></div>
+          <div class="fix-meta-item"><strong>Status:</strong> <span style="color:#16a34a">Verified ✓</span></div>
+        </div>
+
+        <!-- Before/After slider -->
+        <div class="slider-wrap">
+          <div class="slider-before" style="width:100%">
+            <div style="text-align:center"><div style="font-size:10px;opacity:.7;margin-bottom:4px">BEFORE</div><div style="background:rgba(0,0,0,.1);padding:6px 12px;border-radius:6px;font-family:monospace;font-size:11px">&lt;img src="product.jpg"&gt;</div></div>
+          </div>
+          <div class="slider-after">
+            <div style="text-align:center"><div style="font-size:10px;opacity:.7;margin-bottom:4px">AFTER</div><div style="background:rgba(0,0,0,.1);padding:6px 12px;border-radius:6px;font-family:monospace;font-size:11px">&lt;img src="product.jpg" alt="Blue wireless headphones"&gt;</div></div>
+          </div>
+          <div class="slider-handle" id="sliderHandle1"></div>
+        </div>
+
+        <div class="before-after">
+          <div class="ba-pane ba-before">
+            <div class="ba-pane-label">
+              <svg style="width:12px;height:12px" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+              Before HTML
+            </div>
+            <div class="code-block" style="border-radius:0;margin:0">
+              <button class="code-copy-btn" onclick="showToast('Copied!')">Copy</button>
+              <span style="color:#f87171">&lt;img</span> <span style="color:#86efac">src</span>=<span style="color:#fde68a">"product-hero.jpg"</span><span style="color:#f87171">&gt;</span>
+            </div>
+          </div>
+          <div class="ba-pane ba-after">
+            <div class="ba-pane-label">
+              <svg style="width:12px;height:12px" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+              Suggested HTML
+            </div>
+            <div class="code-block" style="border-radius:0;margin:0;background:#0a1628">
+              <button class="code-copy-btn" onclick="showToast('Copied!')">Copy</button>
+              <span style="color:#f87171">&lt;img</span><br>
+              &nbsp;&nbsp;<span style="color:#86efac">src</span>=<span style="color:#fde68a">"product-hero.jpg"</span><br>
+              &nbsp;&nbsp;<span style="color:#86efac">alt</span>=<span style="color:#fde68a">"Blue wireless over-ear headphones"</span><br>
+              &nbsp;&nbsp;<span style="color:#86efac">loading</span>=<span style="color:#fde68a">"lazy"</span><br>
+              <span style="color:#f87171">&gt;</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- FIX 2 -->
+      <div class="fix-card">
+        <div class="fix-card-header">
+          <div style="width:38px;height:38px;background:#fff7ed;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+            <svg style="width:18px;height:18px;color:#ea580c" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="13.5" cy="6.5" r=".5"/><circle cx="17.5" cy="10.5" r=".5"/><circle cx="8.5" cy="7.5" r=".5"/><circle cx="6.5" cy="12.5" r=".5"/><path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10c.926 0 1.671-.754 1.671-1.682 0-.423-.162-.826-.44-1.12-.278-.292-.42-.694-.42-1.098 0-.834.669-1.5 1.5-1.5H16c2.761 0 5-2.24 5-5 0-4.42-4.03-8-9-8z"/></svg>
+          </div>
+          <div style="flex:1">
+            <div class="fix-card-title">Fix Color Contrast on CTA Button</div>
+            <div style="font-size:12px;color:var(--text-secondary)">WCAG 1.4.3 · Color Contrast</div>
+          </div>
+          <span class="badge badge-critical">Critical</span>
+          <span class="badge badge-verified">✓ Verified</span>
+        </div>
+        <div class="fix-meta-row">
+          <div class="fix-meta-item"><strong>Est. Fix Time:</strong> 15 mins</div>
+          <div class="fix-meta-item"><strong>Difficulty:</strong> <span style="color:#16a34a">Easy</span></div>
+          <div class="fix-meta-item"><strong>UX Improvement:</strong> <span style="color:#16a34a">+3 score points</span></div>
+          <div class="fix-meta-item"><strong>New Ratio:</strong> <span style="color:#16a34a">7.2:1 ✓ AA</span></div>
+        </div>
+        <div class="before-after">
+          <div class="ba-pane ba-before">
+            <div class="ba-pane-label">Before CSS</div>
+            <div class="code-block" style="border-radius:0;margin:0">
+              <button class="code-copy-btn" onclick="showToast('Copied!')">Copy</button>
+              <span style="color:#86efac">.cta-btn</span> {<br>
+              &nbsp;&nbsp;<span style="color:#93c5fd">background</span>: <span style="color:#fde68a">#86efac</span>;<br>
+              &nbsp;&nbsp;<span style="color:#93c5fd">color</span>: <span style="color:#fde68a">#ffffff</span>;<br>
+              }
+            </div>
+          </div>
+          <div class="ba-pane ba-after">
+            <div class="ba-pane-label">Suggested CSS</div>
+            <div class="code-block" style="border-radius:0;margin:0;background:#0a1628">
+              <button class="code-copy-btn" onclick="showToast('Copied!')">Copy</button>
+              <span style="color:#86efac">.cta-btn</span> {<br>
+              &nbsp;&nbsp;<span style="color:#93c5fd">background</span>: <span style="color:#fde68a">#15803d</span>;<br>
+              &nbsp;&nbsp;<span style="color:#93c5fd">color</span>: <span style="color:#fde68a">#ffffff</span>;<br>
+              &nbsp;&nbsp;<span style="color:#64748b">/* ratio: 7.2:1 ✓ */</span><br>
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- FIX 3 -->
+      <div class="fix-card">
+        <div class="fix-card-header">
+          <div style="width:38px;height:38px;background:#fef2f2;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+            <svg style="width:18px;height:18px;color:#dc2626" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M6 8h.01M10 8h.01M14 8h.01M18 8h.01M8 12h.01M12 12h.01M16 12h.01M7 16h10"/></svg>
+          </div>
+          <div style="flex:1">
+            <div class="fix-card-title">Fix Keyboard Trap in Cookie Modal</div>
+            <div style="font-size:12px;color:var(--text-secondary)">WCAG 2.1.2 · Keyboard Navigation</div>
+          </div>
+          <span class="badge badge-critical">Critical</span>
+          <span style="font-size:11px;color:var(--orange);background:#fff7ed;border:1px solid #fed7aa;padding:3px 9px;border-radius:20px;font-weight:600">Pending Review</span>
+        </div>
+        <div class="fix-meta-row">
+          <div class="fix-meta-item"><strong>Est. Fix Time:</strong> 2 hours</div>
+          <div class="fix-meta-item"><strong>Difficulty:</strong> <span style="color:#ca8a04">Medium</span></div>
+          <div class="fix-meta-item"><strong>UX Improvement:</strong> <span style="color:#16a34a">+6 score points</span></div>
+        </div>
+        <div class="before-after">
+          <div class="ba-pane ba-before">
+            <div class="ba-pane-label">Before JS</div>
+            <div class="code-block" style="border-radius:0;margin:0">
+              <button class="code-copy-btn" onclick="showToast('Copied!')">Copy</button>
+              <span style="color:#94a3b8">// No focus management</span><br>
+              <span style="color:#f87171">modal</span>.<span style="color:#93c5fd">show</span>();
+            </div>
+          </div>
+          <div class="ba-pane ba-after">
+            <div class="ba-pane-label">Suggested JS</div>
+            <div class="code-block" style="border-radius:0;margin:0;background:#0a1628">
+              <button class="code-copy-btn" onclick="showToast('Copied!')">Copy</button>
+              <span style="color:#f87171">const</span> <span style="color:#86efac">focusable</span> = modal.<br>
+              &nbsp;&nbsp;<span style="color:#93c5fd">querySelectorAll</span>(<span style="color:#fde68a">'a,button,input'</span>);<br>
+              <span style="color:#f87171">document</span>.<span style="color:#93c5fd">addEventListener</span>(<span style="color:#fde68a">'keydown'</span>, e =&gt; {<br>
+              &nbsp;&nbsp;<span style="color:#f87171">if</span>(e.key === <span style="color:#fde68a">'Escape'</span>) modal.<span style="color:#93c5fd">close</span>();<br>
+              &nbsp;&nbsp;<span style="color:#94a3b8">// Trap focus in focusable[]</span><br>
+              });
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- FIX 4 -->
+      <div class="fix-card">
+        <div class="fix-card-header">
+          <div style="width:38px;height:38px;background:#eff6ff;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+            <svg style="width:18px;height:18px;color:#2563eb" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          </div>
+          <div style="flex:1">
+            <div class="fix-card-title">Add Labels to Signup Form Inputs</div>
+            <div style="font-size:12px;color:var(--text-secondary)">WCAG 1.3.1 · Forms</div>
+          </div>
+          <span class="badge badge-high">High</span>
+          <span class="badge badge-verified">✓ Verified</span>
+        </div>
+        <div class="fix-meta-row">
+          <div class="fix-meta-item"><strong>Est. Fix Time:</strong> 45 mins</div>
+          <div class="fix-meta-item"><strong>Difficulty:</strong> <span style="color:#16a34a">Easy</span></div>
+          <div class="fix-meta-item"><strong>UX Improvement:</strong> <span style="color:#16a34a">+2 score points</span></div>
+        </div>
+        <div class="before-after">
+          <div class="ba-pane ba-before">
+            <div class="ba-pane-label">Before HTML</div>
+            <div class="code-block" style="border-radius:0;margin:0">
+              <button class="code-copy-btn" onclick="showToast('Copied!')">Copy</button>
+              <span style="color:#f87171">&lt;input</span> <span style="color:#86efac">type</span>=<span style="color:#fde68a">"email"</span><br>
+              &nbsp;&nbsp;<span style="color:#86efac">placeholder</span>=<span style="color:#fde68a">"Email"</span><span style="color:#f87171">&gt;</span>
+            </div>
+          </div>
+          <div class="ba-pane ba-after">
+            <div class="ba-pane-label">Suggested HTML</div>
+            <div class="code-block" style="border-radius:0;margin:0;background:#0a1628">
+              <button class="code-copy-btn" onclick="showToast('Copied!')">Copy</button>
+              <span style="color:#f87171">&lt;label</span> <span style="color:#86efac">for</span>=<span style="color:#fde68a">"email"</span><span style="color:#f87171">&gt;</span>Email<span style="color:#f87171">&lt;/label&gt;</span><br>
+              <span style="color:#f87171">&lt;input</span> <span style="color:#86efac">id</span>=<span style="color:#fde68a">"email"</span> <span style="color:#86efac">type</span>=<span style="color:#fde68a">"email"</span><br>
+              &nbsp;&nbsp;<span style="color:#86efac">autocomplete</span>=<span style="color:#fde68a">"email"</span><br>
+              &nbsp;&nbsp;<span style="color:#86efac">aria-required</span>=<span style="color:#fde68a">"true"</span><span style="color:#f87171">&gt;</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div><!-- /aifixes -->
+
+    <!-- ════════════ PAGE: REPORTS ════════════ -->
+    <div id="page-reports" class="page">
+      <!-- Action bar -->
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:10px">
+        <div>
+          <div style="font-size:16px;font-weight:700;color:var(--text-primary)">Audit Report</div>
+          <div style="font-size:13px;color:var(--text-muted)">Professional consulting document · June 27, 2026</div>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn btn-primary btn-sm" onclick="showToast('PDF downloading…')"><svg style="width:14px;height:14px" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>PDF</button>
+          <button class="btn btn-secondary btn-sm" onclick="showToast('HTML downloading…')">HTML</button>
+          <button class="btn btn-secondary btn-sm" onclick="showToast('JSON downloading…')">JSON</button>
+          <button class="btn btn-secondary btn-sm" onclick="window.print()">Print</button>
+          <button class="btn btn-secondary btn-sm" onclick="showToast('Share link copied!')">Share</button>
+        </div>
+      </div>
+
+      <div class="report-doc">
+        <!-- HEADER -->
+        <div class="report-header">
+          <div class="report-logo">
+            <div class="report-logo-icon"><svg style="width:20px;height:20px;color:#fff" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9.75 3.104v5.714a2.25 2.25 0 01-.659 1.591L5 14.5M9.75 3.104c-.251.023-.501.05-.75.082m.75-.082a24.301 24.301 0 014.5 0m0 0v5.714c0 .597.237 1.17.659 1.591L19.8 15.3M14.25 3.104c.251.023.501.05.75.082M19.8 15.3l-1.57.393A9.065 9.065 0 0112 15a9.065 9.065 0 00-6.23-.693L5 14.5m14.8.8l1.402 1.402c1 1 .03 2.698-1.32 2.698H4.12c-1.35 0-2.32-1.698-1.32-2.698L4 15.3"/></svg></div>
+            <div style="font-size:16px;font-weight:800;color:var(--text-primary)">Conversational UX Auditor</div>
+          </div>
+          <div class="report-title">UX Accessibility Audit Report</div>
+          <div class="report-subtitle">acme-corp.io · Audited June 27, 2026 · Prepared by Jamie Davis</div>
+          <div style="margin-top:16px;display:flex;justify-content:center;gap:16px;flex-wrap:wrap">
+            <span class="badge badge-info">Overall Grade: B+</span>
+            <span class="badge badge-info">Score: 78.4/100</span>
+            <span class="badge badge-info">27 Issues Found</span>
+            <span class="badge badge-info">WCAG 2.1 AA</span>
+          </div>
+        </div>
+
+        <!-- EXEC SUMMARY -->
+        <div class="report-section">
+          <div class="report-section-title">Executive Summary</div>
+          <div class="report-section-sub">High-level findings for stakeholders</div>
+          <div class="exec-summary">
+            This audit of <strong>acme-corp.io</strong> was conducted on <strong>June 27, 2026</strong> using the Conversational UX Auditor AI platform. The site received an overall grade of <strong>B+ (78.4/100)</strong>, indicating a good baseline with significant improvement opportunities. A total of <strong>27 issues</strong> were identified across Accessibility, UX Heuristics, and User Journey categories.<br><br>
+            <strong>Critical Finding:</strong> The checkout and payment flows present the most severe UX friction, with drop-off rates reaching 34%. Five critical accessibility violations require immediate remediation to achieve WCAG 2.1 AA compliance. Addressing all critical and high-priority issues is estimated to raise the overall score to <strong>A− (91/100)</strong> and increase conversion rates by an estimated <strong>18-24%</strong>.
+          </div>
+        </div>
+
+        <!-- SCORES OVERVIEW -->
+        <div class="report-section">
+          <div class="report-section-title">Overall Scores</div>
+          <div class="report-section-sub">Category breakdown</div>
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px">
+            <div style="text-align:center;padding:16px 12px;background:var(--bg);border-radius:var(--radius);border:1px solid var(--border)">
+              <div style="font-size:32px;font-weight:800;color:#2563eb">71</div>
+              <div style="font-size:12px;font-weight:600;color:var(--text-secondary);margin-top:4px">Accessibility</div>
+              <div class="progress-track" style="margin-top:8px"><div class="progress-fill" style="width:71%;background:#2563eb"></div></div>
+            </div>
+            <div style="text-align:center;padding:16px 12px;background:var(--bg);border-radius:var(--radius);border:1px solid var(--border)">
+              <div style="font-size:32px;font-weight:800;color:#7c3aed">82</div>
+              <div style="font-size:12px;font-weight:600;color:var(--text-secondary);margin-top:4px">UX Heuristics</div>
+              <div class="progress-track" style="margin-top:8px"><div class="progress-fill" style="width:82%;background:#7c3aed"></div></div>
+            </div>
+            <div style="text-align:center;padding:16px 12px;background:var(--bg);border-radius:var(--radius);border:1px solid var(--border)">
+              <div style="font-size:32px;font-weight:800;color:#16a34a">79</div>
+              <div style="font-size:12px;font-weight:600;color:var(--text-secondary);margin-top:4px">User Journey</div>
+              <div class="progress-track" style="margin-top:8px"><div class="progress-fill" style="width:79%;background:#16a34a"></div></div>
+            </div>
+            <div style="text-align:center;padding:16px 12px;background:var(--bg);border-radius:var(--radius);border:1px solid var(--border)">
+              <div style="font-size:32px;font-weight:800;color:#ea580c">68</div>
+              <div style="font-size:12px;font-weight:600;color:var(--text-secondary);margin-top:4px">Performance</div>
+              <div class="progress-track" style="margin-top:8px"><div class="progress-fill" style="width:68%;background:#ea580c"></div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- CRITICAL ISSUES -->
+        <div class="report-section">
+          <div class="report-section-title">Critical Issues</div>
+          <div class="report-section-sub">Require immediate remediation</div>
+          <table class="tbl">
+            <thead><tr><th>#</th><th>Issue</th><th>Category</th><th>WCAG</th><th>Severity</th><th>Est. Fix</th></tr></thead>
+            <tbody>
+              <tr><td style="font-weight:700;color:var(--text-muted)">01</td><td style="font-weight:600">Missing alt text on 8 product images</td><td>Accessibility</td><td><span class="wcag-ref">1.1.1</span></td><td><span class="badge badge-critical">Critical</span></td><td>30 min</td></tr>
+              <tr><td style="font-weight:700;color:var(--text-muted)">02</td><td style="font-weight:600">CTA button color contrast 1.89:1 (fails AA)</td><td>Accessibility</td><td><span class="wcag-ref">1.4.3</span></td><td><span class="badge badge-critical">Critical</span></td><td>15 min</td></tr>
+              <tr><td style="font-weight:700;color:var(--text-muted)">03</td><td style="font-weight:600">Keyboard focus trapped in cookie modal</td><td>Accessibility</td><td><span class="wcag-ref">2.1.2</span></td><td><span class="badge badge-critical">Critical</span></td><td>2 hrs</td></tr>
+              <tr><td style="font-weight:700;color:var(--text-muted)">04</td><td style="font-weight:600">Checkout form: no inline validation</td><td>UX Heuristics</td><td>H5</td><td><span class="badge badge-critical">Critical</span></td><td>1 day</td></tr>
+              <tr><td style="font-weight:700;color:var(--text-muted)">05</td><td style="font-weight:600">Payment flow 34% drop-off rate</td><td>User Journey</td><td>—</td><td><span class="badge badge-critical">Critical</span></td><td>3 days</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- RECOMMENDATIONS + ANNOTATED SCREENSHOTS -->
+        <div class="report-section">
+          <div class="report-section-title">Annotated Screenshots</div>
+          <div class="report-section-sub">Visual evidence of identified issues</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+            <div>
+              <div class="anno-screenshot"><span style="font-size:12px;color:var(--text-muted)">Homepage – Missing Alt Text ①</span></div>
+              <div style="font-size:12px;color:var(--text-secondary);margin-top:6px;padding:8px;background:var(--bg);border-radius:6px;border-left:3px solid var(--red)">8 &lt;img&gt; elements with empty alt attributes detected on hero section and product grid.</div>
+            </div>
+            <div>
+              <div class="anno-screenshot"><span style="font-size:12px;color:var(--text-muted)">Checkout – Form Errors ②</span></div>
+              <div style="font-size:12px;color:var(--text-secondary);margin-top:6px;padding:8px;background:var(--bg);border-radius:6px;border-left:3px solid var(--orange)">No real-time validation on credit card field. User cannot proceed but receives no feedback.</div>
+            </div>
+            <div>
+              <div class="anno-screenshot"><span style="font-size:12px;color:var(--text-muted)">CTA Button – Contrast ③</span></div>
+              <div style="font-size:12px;color:var(--text-secondary);margin-top:6px;padding:8px;background:var(--bg);border-radius:6px;border-left:3px solid var(--red)">Button background #86efac with white text: 1.89:1 ratio. WCAG AA requires 4.5:1.</div>
+            </div>
+            <div>
+              <div class="anno-screenshot"><span style="font-size:12px;color:var(--text-muted)">Cookie Modal – Focus Trap ④</span></div>
+              <div style="font-size:12px;color:var(--text-secondary);margin-top:6px;padding:8px;background:var(--bg);border-radius:6px;border-left:3px solid var(--red)">Keyboard focus cannot leave the modal. No Escape key handler. Blocker for all keyboard users.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- IMPROVEMENT ROADMAP -->
+        <div class="report-section">
+          <div class="report-section-title">Improvement Roadmap</div>
+          <div class="report-section-sub">Prioritized action plan for development team</div>
+          <div class="roadmap-item"><div class="roadmap-num">1</div><div class="roadmap-content"><div class="roadmap-title">Sprint 1 — Critical Fixes (Week 1)</div><div class="roadmap-desc">Fix alt text, color contrast, keyboard focus trap. Estimated score improvement: +8 points. These are quick wins with high impact.</div></div></div>
+          <div class="roadmap-item"><div class="roadmap-num">2</div><div class="roadmap-content"><div class="roadmap-title">Sprint 2 — Checkout Overhaul (Week 2-3)</div><div class="roadmap-desc">Redesign checkout with inline validation, clear progress indicators, and error recovery. Expected conversion increase: +18%.</div></div></div>
+          <div class="roadmap-item"><div class="roadmap-num">3</div><div class="roadmap-content"><div class="roadmap-title">Sprint 3 — Form Accessibility (Week 3)</div><div class="roadmap-desc">Add proper labels, ARIA attributes, and focus indicators to all forms. Brings site to WCAG 2.1 AA compliance.</div></div></div>
+          <div class="roadmap-item"><div class="roadmap-num">4</div><div class="roadmap-content"><div class="roadmap-title">Sprint 4 — UX Improvements (Week 4-5)</div><div class="roadmap-desc">Implement undo/redo, improve error messages, add keyboard shortcuts. Estimated score: A− (91/100).</div></div></div>
+          <div class="roadmap-item"><div class="roadmap-num">5</div><div class="roadmap-content"><div class="roadmap-title">Sprint 5 — Performance & Polish (Week 6)</div><div class="roadmap-desc">Optimize Core Web Vitals, implement loading states, add onboarding flow. Target final score: A (95/100).</div></div></div>
+        </div>
+
+        <!-- AI SUGGESTIONS -->
+        <div class="report-section">
+          <div class="report-section-title">AI Recommendations</div>
+          <div style="background:linear-gradient(135deg,#eff6ff,#f5f3ff);border:1px solid var(--blue-mid);border-radius:var(--radius-lg);padding:18px 20px">
+            <div style="font-size:13.5px;font-weight:700;color:var(--text-primary);margin-bottom:8px">🤖 AI Analysis Summary</div>
+            <div style="font-size:13px;color:var(--text-secondary);line-height:1.7">Based on pattern analysis across 10,000+ audited sites, acme-corp.io's most impactful improvements will be in the checkout flow (estimated 34% drop-off reduction) and accessibility compliance (bringing the site to WCAG 2.1 AA). The development team should prioritize the 5 critical issues, all of which have estimated fix times under 2 hours except for the checkout overhaul. The projected overall score after all fixes is <strong>95/100 (Grade A)</strong>.</div>
+          </div>
+        </div>
+      </div>
+    </div><!-- /reports -->
+
+    <!-- ════════════ PAGE: AI CHAT ════════════ -->
+    <div id="page-chat" class="page">
+      <div class="chat-wrap">
+        <div class="chat-messages" id="chatMessages">
+          <div class="chat-welcome">
+            <div class="chat-welcome-icon">
+              <svg style="width:28px;height:28px;color:#fff" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+            </div>
+            <div class="chat-welcome-title">Ask anything about this audit.</div>
+            <div class="chat-welcome-sub">I have full context of your acme-corp.io audit from June 27, 2026 · B+ · 27 issues found.</div>
+            <div class="chat-suggestions">
+              <span class="chat-suggestion" onclick="sendSuggestion('Explain my accessibility issues')">Explain my accessibility issues</span>
+              <span class="chat-suggestion" onclick="sendSuggestion('How can I improve usability?')">How can I improve usability?</span>
+              <span class="chat-suggestion" onclick="sendSuggestion('Why is keyboard trap marked Critical?')">Why is this issue Critical?</span>
+              <span class="chat-suggestion" onclick="sendSuggestion('Generate React code for the form label fix')">Generate React code for this fix</span>
+              <span class="chat-suggestion" onclick="sendSuggestion('Generate Tailwind CSS for the CTA button fix')">Generate Tailwind CSS</span>
+              <span class="chat-suggestion" onclick="sendSuggestion('Explain this report to a client')">Explain this report to a client</span>
+              <span class="chat-suggestion" onclick="sendSuggestion('Prioritize issues by business impact')">Prioritize issues by impact</span>
+            </div>
+          </div>
+        </div>
+        <div class="chat-input-area">
+          <textarea class="chat-input" id="chatInput" rows="1" placeholder="Ask anything about this audit…" onkeydown="handleChatKey(event)"></textarea>
+          <button class="chat-send-btn" onclick="sendChat()">
+            <svg style="width:18px;height:18px" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+          </button>
+        </div>
+      </div>
+    </div><!-- /chat -->
+
+  </div><!-- /content -->
+</div><!-- /main -->
+
+<!-- FLOATING AI BUTTON -->
+<button id="floatAI" onclick="switchPage('chat',document.querySelector('[data-page=chat]'))" title="Open AI Assistant">
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+</button>
+
+<!-- TOAST -->
+<div id="toast" style="position:fixed;bottom:90px;right:28px;background:#0f172a;color:#fff;padding:10px 18px;border-radius:10px;font-size:13px;font-weight:500;opacity:0;transform:translateY(8px);transition:all .3s ease;z-index:2000;pointer-events:none"></div>
+
+<script>
+/* ── PAGE SWITCHING ── */
+const pageTitles = {
+  dashboard:     'Dashboard / Overview',
+  accessibility: 'Accessibility / WCAG Audit',
+  heuristics:    'UX Heuristics / Nielsen\'s 10',
+  journey:       'User Journey / Flow Analysis',
+  aifixes:       'AI Fixes / Code Solutions',
+  reports:       'Reports / Professional Audit',
+  chat:          'AI Chat / Assistant'
+};
+
+function switchPage(id, navEl) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  document.querySelectorAll('.sb-item').forEach(i => i.classList.remove('active'));
+  if (navEl) navEl.classList.add('active');
+  document.getElementById('tb-title').textContent = pageTitles[id] || id;
+  document.getElementById('content').scrollTop = 0;
+  if (id === 'heuristics' && !window._trendChartInit) initTrendChart();
+}
+
+/* ── CATEGORY TOGGLES ── */
+function toggleCat(header) {
+  header.classList.toggle('open');
+  const body = header.nextElementSibling;
+  body.classList.toggle('open');
+}
+
+/* ── FILTER CHIPS ── */
+function toggleChip(el) {
+  el.closest('.filter-bar').querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+}
+
+/* ── JOURNEY STEP DETAIL ── */
+const journeyData = {
+  homepage:     { icon:'🏠', status:'success', statusLabel:'Success', time:'2.1s', clicks:'0', friction:'1.2', dropoff:'3%', problems:['None — Landing page loads correctly', 'Hero CTA is clearly visible', 'Navigation structure is clear'], ai:'The homepage performs excellently. Load time of 2.1s is within acceptable range. The hero section has a clear value proposition and a prominent CTA.', improvements:['Consider adding a personalized greeting for returning users', 'A/B test hero CTA copy for higher conversion'] },
+  navigation:   { icon:'🧭', status:'success', statusLabel:'Success', time:'1.4s', clicks:'3', friction:'2.1', dropoff:'5%', problems:['Mobile hamburger menu has slight delay on open', 'Mega menu hover target area too small'], ai:'Navigation is generally effective but has minor usability issues. Users spend 3 clicks finding their desired destination, slightly above the ideal 1-2 clicks.', improvements:['Add mega-menu keyboard navigation', 'Increase hover/click target for dropdown menus', 'Consider adding a prominent search bar'] },
+  pricing:      { icon:'💰', status:'warning', statusLabel:'Warning', time:'4.7s', clicks:'6', friction:'4.8', dropoff:'11%', problems:['Page has 4 competing CTA buttons causing decision paralysis', 'Feature comparison table is hard to scan on mobile', 'FAQ section requires scrolling past fold'], ai:'The pricing page shows concerning engagement metrics. Users spend 4.7s — longest on any page — suggesting confusion. The 11% drop-off here indicates pricing clarity issues.', improvements:['Reduce to one primary CTA per pricing tier', 'Add "Most Popular" callout to recommended plan', 'Implement sticky pricing comparison on scroll', 'Add live chat trigger after 30s on this page'] },
+  signup:       { icon:'📝', status:'warning', statusLabel:'Warning', time:'3.2s', clicks:'12', friction:'5.5', dropoff:'16%', problems:['Missing form field labels (uses placeholder only)', 'No password strength indicator', 'No inline validation until form submit', '12 clicks to complete signup — too many'], ai:'The signup flow has significant friction with 12 clicks needed and no inline feedback. The 16% drop-off is above industry average of 8%. Missing labels create accessibility and usability problems.', improvements:['Add real-time inline validation', 'Implement password strength meter', 'Add social login options (Google/GitHub)', 'Reduce required fields to minimum (email + password only)'] },
+  login:        { icon:'🔐', status:'success', statusLabel:'Success', time:'1.8s', clicks:'4', friction:'2.3', dropoff:'4%', problems:['Remember me checkbox not clearly labeled'], ai:'The login flow is clean and efficient. 1.8s load time and only 4 clicks for a complete login is excellent. Minor improvement needed for the Remember Me label clarity.', improvements:['Add biometric authentication support', 'Improve Remember Me label clarity', 'Add "Forgot Password?" link more prominently'] },
+  checkout:     { icon:'🛒', status:'failed', statusLabel:'Failed', time:'9.3s', clicks:'18', friction:'8.1', dropoff:'28%', problems:['No inline validation on credit card field', 'Cannot go Back to previous checkout step', 'Order summary hidden below fold', 'No clear indication of checkout progress', 'Trust signals (security badges) not visible'], ai:'⚠️ Critical: The checkout flow is the primary conversion killer. 9.3s average time and 28% drop-off are alarming. Users are confused by the multi-step process with no progress indication, and the lack of validation forces them to discover errors only on submission.', improvements:['Add visible progress bar (Step 1 of 3)', 'Implement real-time card validation with Luhn algorithm', 'Keep order summary always visible', 'Add Back button between all steps', 'Display security badges and SSL certificate indicator'] },
+  payment:      { icon:'💳', status:'failed', statusLabel:'Failed', time:'12.1s', clicks:'22', friction:'9.2', dropoff:'34%', problems:['No card type detection (Visa/MC/Amex)', 'CVV has no contextual help tooltip', 'Error message says "Invalid" with no context', 'No saved payment method option', 'No PayPal/Apple Pay alternatives'], ai:'⚠️ CRITICAL: This is the highest-friction point in the entire journey with 34% drop-off. The payment form lacks real-time feedback, has unhelpful error messages, and offers no alternative payment methods. This is estimated to cause a significant revenue impact.', improvements:['Auto-detect card type from first 4 digits', 'Add tooltip showing CVV location image', 'Specific error: "Card number invalid — check digits 9-12"', 'Add saved payment options for returning users', 'Integrate Stripe, PayPal, and Apple Pay', 'Show total with tax clearly before final confirmation'] },
+  confirmation: { icon:'✅', status:'warning', statusLabel:'Warning', time:'2.4s', clicks:'2', friction:'1.8', dropoff:'2%', problems:['Confirmation email takes 8+ minutes to arrive', 'No order tracking link on confirmation page', 'Upsell recommendations feel intrusive immediately after purchase'], ai:'The confirmation page is mostly successful but has post-purchase experience issues. The delayed confirmation email (8+ min) creates anxiety. Users are uncertain about their order status.', improvements:['Send confirmation email within 60 seconds', 'Add real-time order status tracker', 'Delay upsell recommendations to follow-up email', 'Add "Add to Calendar" for service bookings'] }
+};
+
+function openJourneyStep(card, stepId) {
+  document.querySelectorAll('.journey-step-card').forEach(c => c.classList.remove('active-step'));
+  card.classList.add('active-step');
+  const d = journeyData[stepId];
+  if (!d) return;
+  const detail = document.getElementById('journeyDetail');
+  const statusColor = d.status === 'success' ? '#16a34a' : d.status === 'warning' ? '#ca8a04' : '#dc2626';
+  const statusBg = d.status === 'success' ? '#dcfce7' : d.status === 'warning' ? '#fef9c3' : '#fee2e2';
+  document.getElementById('journeyDetailContent').innerHTML = `
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:18px">
+      <div style="font-size:28px">${d.icon}</div>
+      <div>
+        <div style="font-size:15px;font-weight:800;color:var(--text-primary);text-transform:capitalize">${stepId} Step — Detailed Analysis</div>
+        <div style="display:flex;gap:8px;margin-top:4px">
+          <span style="background:${statusBg};color:${statusColor};font-size:11.5px;font-weight:600;padding:2px 9px;border-radius:20px">${d.statusLabel}</span>
+          <span class="badge badge-info">⏱ ${d.time}</span>
+          <span class="badge badge-info">🖱 ${d.clicks} clicks</span>
+          <span class="badge badge-info">Friction: ${d.friction}/10</span>
+          <span class="badge ${d.status==='failed'?'badge-critical':d.status==='warning'?'badge-warn':'badge-pass'}">Drop-off: ${d.dropoff}</span>
+        </div>
+      </div>
+    </div>
+    <div class="journey-detail-grid">
+      <div>
+        <div class="journey-screenshot"><span style="font-size:11px;color:var(--text-muted)">${stepId.charAt(0).toUpperCase()+stepId.slice(1)} Screenshot</span></div>
+      </div>
+      <div>
+        <div style="font-size:13px;font-weight:700;color:var(--text-primary);margin-bottom:8px">Problems Detected</div>
+        <ul style="list-style:none;padding:0;margin:0 0 14px;display:flex;flex-direction:column;gap:5px">
+          ${d.problems.map(p=>`<li style="display:flex;align-items:flex-start;gap:7px;font-size:12.5px;color:var(--text-secondary)"><span style="color:${p.startsWith('None')?'#16a34a':'#dc2626'};flex-shrink:0;margin-top:1px">${p.startsWith('None')?'✓':'✗'}</span>${p}</li>`).join('')}
+        </ul>
+        <div style="background:linear-gradient(135deg,#eff6ff,#f5f3ff);border:1px solid var(--blue-mid);border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:12px">
+          <div style="font-size:12px;font-weight:700;color:var(--text-primary);margin-bottom:4px">🤖 AI Explanation</div>
+          <div style="font-size:12.5px;color:var(--text-secondary);line-height:1.6">${d.ai}</div>
+        </div>
+        <div style="font-size:13px;font-weight:700;color:var(--text-primary);margin-bottom:8px">Suggested Improvements</div>
+        <ul style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:4px">
+          ${d.improvements.map(i=>`<li style="display:flex;align-items:flex-start;gap:7px;font-size:12.5px;color:var(--text-secondary)"><span style="color:#2563eb;flex-shrink:0">→</span>${i}</li>`).join('')}
+        </ul>
+      </div>
+    </div>
+  `;
+  detail.classList.add('open');
+  detail.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+/* ── CHARTS ── */
+window.addEventListener('load', () => {
+  // Radar Chart
+  const rCtx = document.getElementById('radarChart');
+  if (rCtx) {
+    new Chart(rCtx, {
+      type: 'radar',
+      data: {
+        labels: ['Accessibility', 'UX Heuristics', 'User Journey', 'Performance', 'SEO', 'Mobile'],
+        datasets: [{
+          label: 'Current Audit',
+          data: [71, 82, 79, 68, 88, 74],
+          backgroundColor: 'rgba(37,99,235,0.12)',
+          borderColor: '#2563eb',
+          borderWidth: 2.5,
+          pointBackgroundColor: '#2563eb',
+          pointRadius: 4,
+          pointHoverRadius: 6,
+        },{
+          label: 'Previous Audit',
+          data: [74, 77, 77, 75, 85, 72],
+          backgroundColor: 'rgba(124,58,237,0.08)',
+          borderColor: '#7c3aed',
+          borderWidth: 1.5,
+          borderDash: [4, 3],
+          pointBackgroundColor: '#7c3aed',
+          pointRadius: 3,
+          pointHoverRadius: 5,
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          r: {
+            beginAtZero: true,
+            max: 100,
+            min: 0,
+            ticks: { stepSize: 25, font: { size: 10, family: 'Inter' }, color: '#94a3b8', backdropColor: 'transparent' },
+            grid: { color: '#f0f1f3' },
+            angleLines: { color: '#e5e7eb' },
+            pointLabels: { font: { size: 11, family: 'Inter', weight: '600' }, color: '#64748b' }
+          }
+        },
+        plugins: {
+          legend: { labels: { font: { size: 11, family: 'Inter' }, color: '#64748b', boxWidth: 12 } }
+        }
+      }
+    });
+  }
+
+  // Pie Chart
+  const pCtx = document.getElementById('pieChart');
+  if (pCtx) {
+    new Chart(pCtx, {
+      type: 'doughnut',
+      data: {
+        labels: ['Passed', 'Warning', 'Failed'],
+        datasets: [{
+          data: [84, 18, 27],
+          backgroundColor: ['#22c55e', '#f59e0b', '#ef4444'],
+          borderColor: '#ffffff',
+          borderWidth: 3,
+          hoverOffset: 6
+        }]
+      },
+      options: {
+        responsive: false,
+        cutout: '68%',
+        plugins: {
+          legend: { display: false },
+          tooltip: { callbacks: { label: ctx => ` ${ctx.label}: ${ctx.raw}` } }
+        }
+      }
+    });
+  }
+});
+
+function initTrendChart() {
+  window._trendChartInit = true;
+  const ctx = document.getElementById('trendChart');
+  if (!ctx) return;
+  new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: ['Mar 1', 'Mar 15', 'Apr 1', 'Apr 20', 'May 10', 'Jun 27'],
+      datasets: [{
+        label: 'Usability Score',
+        data: [68, 71, 73, 76, 79, 82],
+        borderColor: '#2563eb',
+        backgroundColor: 'rgba(37,99,235,0.08)',
+        borderWidth: 2.5,
+        tension: 0.45,
+        fill: true,
+        pointBackgroundColor: '#2563eb',
+        pointRadius: 4,
+        pointHoverRadius: 7,
+      }]
+    },
+    options: {
+      responsive: true,
+      scales: {
+        y: { min: 60, max: 100, ticks: { font: { size: 11, family: 'Inter' }, color: '#94a3b8' }, grid: { color: '#f0f1f3' } },
+        x: { ticks: { font: { size: 11, family: 'Inter' }, color: '#94a3b8' }, grid: { display: false } }
+      },
+      plugins: {
+        legend: { labels: { font: { size: 11, family: 'Inter' }, color: '#64748b', boxWidth: 12 } }
+      }
+    }
+  });
+}
+
+/* ── TOAST ── */
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.opacity = '1';
+  t.style.transform = 'translateY(0)';
+  setTimeout(() => { t.style.opacity = '0'; t.style.transform = 'translateY(8px)'; }, 2200);
+}
+
+/* ── AI CHAT ── */
+const aiResponses = {
+  'Explain my accessibility issues': `Your site has **14 accessibility issues** across 11 categories. Here's a prioritized breakdown:\n\n**🔴 Critical (5 issues):**\n- 8 product images missing alt text (WCAG 1.1.1)\n- CTA button contrast ratio 1.89:1 — fails AA standard (WCAG 1.4.3)\n- Keyboard focus trapped in cookie modal (WCAG 2.1.2)\n\n**🟠 High Priority (6 issues):**\n- SVG icons missing aria-labels\n- Signup form inputs have no \`<label>\` elements\n- Focus ring removed globally with \`outline: none\`\n\nFocusing on the 5 critical issues will improve your score from **71 → 83** and bring you to WCAG 2.1 AA compliance on the most critical checks.`,
+  'How can I improve usability?': `Based on Nielsen's 10 Heuristics analysis, here are your top usability improvements:\n\n**1. Error Prevention (Score: 61/100)**\nAdd inline real-time validation to all forms. This alone could reduce checkout abandonment by ~18%.\n\n**2. User Control & Freedom (Score: 72/100)**\nAdd undo functionality and Back buttons in checkout. Users are currently trapped once they start the payment flow.\n\n**3. Help & Documentation (Score: 68/100)**\nAdd contextual help tooltips and an onboarding walkthrough for new users.\n\n**Quick wins:**\n- Add skeleton loaders for perceived performance\n- Fix error messages to be specific (not generic "Invalid")\n- Add "Forgot Password?" link in error messages`,
+  'Why is keyboard trap marked Critical?': `The keyboard focus trap in the cookie consent modal is **WCAG 2.1.2 Level A** — the most fundamental level of accessibility compliance.\n\n**Why it's Critical:**\n- Level A failures block all keyboard users, including users with motor disabilities who cannot use a mouse\n- Screen reader users are completely unable to navigate past the modal\n- This affects an estimated **2-3% of your users** directly\n\n**The specific problem:**\n\`\`\`\n// Cookie modal opens on page load\n// Tab key cycles only within first input\n// Escape key does nothing\n// User cannot reach any page content\n\`\`\`\n\n**Impact:** Any user who primarily uses keyboard navigation is completely locked out of your entire website until they close the browser tab. This is a legal compliance risk under ADA/EN 301 549.`,
+  'Generate React code for the form label fix': `Here's the React component with proper accessibility:\n\n\`\`\`jsx\nfunction AccessibleInput({ id, label, type, required, ...props }) {\n  return (\n    <div className="form-group">\n      <label htmlFor={id}>\n        {label}\n        {required && <span aria-label="required"> *</span>}\n      </label>\n      <input\n        id={id}\n        type={type}\n        aria-required={required}\n        aria-describedby={\`\${id}-error\`}\n        autoComplete={type === 'email' ? 'email' : undefined}\n        {...props}\n      />\n      <div id={\`\${id}-error\`} role="alert" aria-live="polite" />\n    </div>\n  );\n}\n\n// Usage:\n<AccessibleInput\n  id="email"\n  label="Email Address"\n  type="email"\n  required\n/>\n\`\`\`\n\nThis component:\n✅ Associates label with input via \`htmlFor\`/\`id\`\n✅ Uses \`aria-required\` for screen readers\n✅ Sets up error message region with \`aria-live\`\n✅ Adds appropriate \`autoComplete\` attributes`,
+  'Generate Tailwind CSS for the CTA button fix': `Here's the WCAG-compliant Tailwind CSS button:\n\n\`\`\`html\n<!-- BEFORE (Fails WCAG 1.4.3) -->\n<button class="bg-green-300 text-white px-6 py-3 rounded-lg">\n  Get Started\n</button>\n<!-- Contrast ratio: 1.89:1 ✗ -->\n\n<!-- AFTER (Passes WCAG 1.4.3 AA) -->\n<button class="\n  bg-green-700 text-white px-6 py-3 rounded-lg\n  hover:bg-green-800 active:bg-green-900\n  focus:outline-none focus:ring-4 focus:ring-green-300\n  transition-colors duration-200\n  font-semibold text-sm\n">\n  Get Started\n</button>\n<!-- Contrast ratio: 7.2:1 ✓ AA + AAA -->\n\`\`\`\n\nKey changes:\n✅ \`bg-green-700\` replaces \`bg-green-300\` (dark vs light)\n✅ Focus ring added with \`focus:ring-4 focus:ring-green-300\`\n✅ Smooth hover/active states for better feedback\n✅ Final contrast ratio: **7.2:1** (passes both AA and AAA)`,
+  'Explain this report to a client': `Here's a client-friendly summary of your audit:\n\n**Executive Summary for acme-corp.io**\n\n"We've completed a comprehensive UX and accessibility audit of your website and found some important opportunities to improve the experience for all your users and increase conversions.\n\nYour site received a **B+ grade (78.4/100)**, which is a solid foundation. Here's what we found:\n\n**The Good News:**\n- Your design is clean and modern ✅\n- Basic navigation works well ✅\n- Content is well-organized ✅\n\n**What We Need to Fix:**\n1. **Accessibility** — Some users with disabilities can't use parts of your site. We can fix this in about 2 weeks.\n2. **Checkout Flow** — 34% of users leave during payment. Fixing this could increase revenue by ~24%.\n3. **Form Usability** — Users don't get helpful feedback when they make mistakes in forms.\n\n**If we fix everything:** Your site will score **A (95/100)** and we estimate **+18-24% increase in conversion rate**."`,
+  'Prioritize issues by business impact': `Here are your 27 issues ranked by **estimated business impact**:\n\n**🔴 Tier 1 — Highest ROI (Fix this week)**\n1. Checkout no inline validation → **+24% conversion** est.\n2. Payment page friction → **+18% revenue** est.\n3. CTA button contrast (immediate fix, 15 mins)\n\n**🟠 Tier 2 — Compliance & Risk (Fix this month)**\n4. Keyboard focus trap → ADA/legal risk\n5. Missing alt text → SEO + accessibility\n6. Signup form labels → reduces abandonment\n\n**🟡 Tier 3 — UX Polish (Next quarter)**\n7. Error message quality\n8. Back button in checkout\n9. Loading state feedback\n\n**Total estimated impact:**\n- Fix Tier 1: +22% conversion, Score → A−\n- Fix All: +28% conversion, Score → A (95/100)\n- Development effort: ~3 sprints (6 weeks)`
+};
+
+function sendSuggestion(text) {
+  document.getElementById('chatInput').value = text;
+  sendChat();
+}
+
+function handleChatKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendChat(); }
+}
+
+function sendChat() {
+  const input = document.getElementById('chatInput');
+  const msg = input.value.trim();
+  if (!msg) return;
+  input.value = '';
+
+  const container = document.getElementById('chatMessages');
+
+  // Remove welcome if first message
+  const welcome = container.querySelector('.chat-welcome');
+  if (welcome) welcome.remove();
+
+  // User message
+  container.innerHTML += `
+    <div class="chat-msg user">
+      <div class="chat-avatar">JD</div>
+      <div class="chat-bubble">${escapeHtml(msg)}</div>
+    </div>`;
+
+  container.scrollTop = container.scrollHeight;
+
+  // AI typing indicator
+  const typingId = 'typing-' + Date.now();
+  container.innerHTML += `
+    <div class="chat-msg ai" id="${typingId}">
+      <div class="chat-avatar">AI</div>
+      <div class="chat-bubble" style="color:var(--text-muted)"><span style="display:flex;gap:4px;align-items:center"><span class="typing-dot" style="width:7px;height:7px;background:#94a3b8;border-radius:50%;animation:blink 1.2s ease-in-out infinite"></span><span class="typing-dot" style="width:7px;height:7px;background:#94a3b8;border-radius:50%;animation:blink 1.2s ease-in-out .3s infinite"></span><span class="typing-dot" style="width:7px;height:7px;background:#94a3b8;border-radius:50%;animation:blink 1.2s ease-in-out .6s infinite"></span></span></div>
+    </div>`;
+  container.scrollTop = container.scrollHeight;
+
+  // Find response
+  const responseKey = Object.keys(aiResponses).find(k => msg.toLowerCase().includes(k.toLowerCase().split(' ')[0]) || k.toLowerCase().includes(msg.toLowerCase().split(' ')[0]));
+  const response = aiResponses[responseKey] || `I've analyzed your question about "${msg}". Based on the acme-corp.io audit:\n\n**Summary:** Your audit shows a B+ score (78.4/100) with 27 issues total. The highest-priority areas for improvement are the checkout flow (34% drop-off), accessibility compliance (14 WCAG violations), and form usability.\n\n**Key finding:** Fixing the 5 critical issues is estimated to raise your score to A− (91/100) within 2-3 sprints. Would you like me to generate specific code fixes for any of the issues?`;
+
+  setTimeout(() => {
+    const typingEl = document.getElementById(typingId);
+    if (typingEl) typingEl.remove();
+    container.innerHTML += `
+      <div class="chat-msg ai">
+        <div class="chat-avatar">AI</div>
+        <div class="chat-bubble">${formatMarkdown(response)}</div>
+      </div>`;
+    container.scrollTop = container.scrollHeight;
+  }, 1100);
+}
+
+function formatMarkdown(text) {
+  return text
+    .replace(/```(\w*)\n?([\s\S]*?)```/g, '<div class="chat-code">$2</div>')
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*(.*?)\*/g, '<em>$1</em>')
+    .replace(/\n/g, '<br>');
+}
+
+function escapeHtml(text) {
+  return text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// Blink animation
+const style = document.createElement('style');
+style.textContent = `@keyframes blink{0%,100%{opacity:.3}50%{opacity:1}}`;
+document.head.appendChild(style);
+
+/* ── BEFORE/AFTER SLIDER ── */
+(function() {
+  const handle = document.getElementById('sliderHandle1');
+  if (!handle) return;
+  let dragging = false;
+  handle.addEventListener('mousedown', e => { dragging = true; e.preventDefault(); });
+  document.addEventListener('mousemove', e => {
+    if (!dragging) return;
+    const wrap = handle.closest('.slider-wrap');
+    const rect = wrap.getBoundingClientRect();
+    let pct = ((e.clientX - rect.left) / rect.width) * 100;
+    pct = Math.max(10, Math.min(90, pct));
+    handle.style.left = pct + '%';
+    wrap.querySelector('.slider-after').style.width = (100 - pct) + '%';
+  });
+  document.addEventListener('mouseup', () => { dragging = false; });
+})();
+
+/* Open homepage step by default on load */
+document.addEventListener('DOMContentLoaded', () => {
+  const firstCard = document.querySelector('.journey-step-card');
+  if (firstCard) openJourneyStep(firstCard, 'homepage');
+});
+</script>
+</body>
+</html>
