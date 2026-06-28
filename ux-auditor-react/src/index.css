@@ -5,39 +5,39 @@
 
 /* --- CSS Custom Properties --- */
 :root {
-  /* Colors */
+  /* VIBRANT LIGHT THEME */
   --bg-primary: #f3f0fb; /* Soft lavender */
-  --bg-secondary: #f8f7fc;
+  --bg-secondary: #fdfcff;
   --bg-card: #ffffff;
   --bg-card-hover: #ffffff;
   --bg-glass: rgba(255, 255, 255, 0.85);
   --bg-glass-hover: rgba(255, 255, 255, 0.95);
 
   --border: rgba(0, 0, 0, 0.08);
-  --border-hover: rgba(0, 0, 0, 0.15);
-  --border-accent: rgba(168, 85, 247, 0.3); /* Purple accent */
+  --border-hover: rgba(168, 85, 247, 0.3); /* Purple border hover */
+  --border-accent: rgba(168, 85, 247, 0.4);
 
   --text-primary: #1a1c1e;
   --text-secondary: #4a5568;
   --text-muted: #718096;
 
   --accent-indigo: #6366f1;
-  --accent-violet: #a855f7;
+  --accent-violet: #a855f7; /* Vibrant Purple */
   --accent-purple: #c084fc;
   --accent-emerald: #10b981;
   --accent-amber: #f59e0b;
   --accent-rose: #ef4444;
   --accent-cyan: #06b6d4;
 
-  --gradient-primary: linear-gradient(135deg, #a855f7, #c084fc); /* Purple gradient */
-  --gradient-hero: linear-gradient(135deg, rgba(168, 85, 247, 0.08), rgba(192, 132, 252, 0.04));
-  --gradient-card: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+  --gradient-primary: linear-gradient(135deg, #a855f7, #06b6d4); /* Purple to Cyan */
+  --gradient-hero: linear-gradient(135deg, rgba(168, 85, 247, 0.1), rgba(6, 182, 212, 0.05));
+  --gradient-card: linear-gradient(180deg, #ffffff 0%, #f8f7fc 100%);
 
-  --shadow-sm: 0 2px 4px rgba(0,0,0,0.02);
-  --shadow-md: 0 8px 16px rgba(0,0,0,0.04);
-  --shadow-lg: 0 20px 40px rgba(0,0,0,0.08);
-  --shadow-glow: 0 0 40px rgba(168, 85, 247, 0.15);
-  --shadow-glow-strong: 0 0 80px rgba(168, 85, 247, 0.25);
+  --shadow-sm: 0 2px 4px rgba(168, 85, 247, 0.05);
+  --shadow-md: 0 8px 16px rgba(168, 85, 247, 0.1);
+  --shadow-lg: 0 20px 40px rgba(168, 85, 247, 0.15);
+  --shadow-glow: 0 0 30px rgba(168, 85, 247, 0.2);
+  --shadow-glow-strong: 0 0 60px rgba(6, 182, 212, 0.3);
 
   /* Spacing */
   --section-padding: 120px 0;
@@ -45,16 +45,17 @@
   --container-padding: 0 24px;
 
   /* Typography */
-  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-sans: 'Space Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+  --font-heading: 'Outfit', sans-serif;
 
   /* Transitions */
-  --transition-fast: 0.15s ease;
-  --transition-base: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  --transition-slow: 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-fast: 0.15s ease-out;
+  --transition-base: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  --transition-slow: 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 
   /* Border radius */
-  --radius-sm: 8px;
+  --radius-sm: 6px;
   --radius-md: 12px;
   --radius-lg: 16px;
   --radius-xl: 24px;
@@ -78,12 +79,58 @@ html {
 
 body {
   font-family: var(--font-sans);
-  background: linear-gradient(180deg, var(--bg-primary) 0%, var(--bg-secondary) 40%, #ffffff 100%);
+  background: var(--bg-primary);
   background-attachment: fixed;
   color: var(--text-primary);
   line-height: 1.6;
   overflow-x: hidden;
   min-height: 100vh;
+  position: relative;
+  z-index: 0;
+}
+
+/* CRAZY BACKGROUND DESIGNS (Glowing Orbs) */
+body::before,
+body::after {
+  content: '';
+  position: fixed;
+  border-radius: 50%;
+  filter: blur(100px);
+  z-index: -1;
+  pointer-events: none;
+  animation: floatOrb 20s infinite ease-in-out alternate;
+}
+
+body::before {
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, rgba(168, 85, 247, 0.15) 0%, rgba(168, 85, 247, 0) 70%);
+  top: -150px;
+  left: -150px;
+}
+
+body::after {
+  width: 700px;
+  height: 700px;
+  background: radial-gradient(circle, rgba(6, 182, 212, 0.15) 0%, rgba(6, 182, 212, 0) 70%);
+  bottom: -200px;
+  right: -100px;
+  animation-delay: -10s;
+}
+
+@keyframes floatOrb {
+  0% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(30px, 50px) scale(1.1); }
+  100% { transform: translate(-20px, 20px) scale(0.9); }
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+  color: var(--text-primary);
+  line-height: 1.2;
+  font-weight: 800; /* Bolder headings */
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
 }
 
 a {

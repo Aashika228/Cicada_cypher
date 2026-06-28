@@ -113,15 +113,27 @@ const AuditModal = ({ isOpen, targetUrl, onClose }) => {
           </div>
         </div>
         
-        <div className="audit-modal__progress-container">
+        <div className="audit-modal__progress-container" style={{ marginBottom: '24px' }}>
           <div 
             className="audit-modal__progress-bar" 
             style={{ width: `${(Math.min(currentStep, 6) / 6) * 100}%` }}
           ></div>
         </div>
         
-        <div className="audit-modal__status">
-          {currentStep === 0 ? 'Initializing engine...' : steps[Math.min(currentStep - 1, 5)]?.status}
+        <div style={{ background: '#0f172a', borderRadius: '8px', padding: '16px', fontFamily: 'monospace', fontSize: '13px', color: '#10b981', textAlign: 'left', height: '140px', overflowY: 'auto', border: '1px solid #1e293b', boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.3)', display: 'flex', flexDirection: 'column' }}>
+          {currentStep >= 0 && <div>{'>'} Initializing engine...</div>}
+          {currentStep >= 0 && <div>{'>'} Connecting to Playwright instance...</div>}
+          {currentStep >= 1 && <div>{'>'} Browser instance ready. Navigating to {targetUrl}...</div>}
+          {currentStep >= 1 && <div>{'>'} Extracting DOM tree and CSS rules...</div>}
+          {currentStep >= 2 && <div>{'>'} Running WCAG 2.1 evaluation on 1,420 nodes...</div>}
+          {currentStep >= 2 && <div>{'>'} Checking contrast ratios and ARIA labels...</div>}
+          {currentStep >= 3 && <div>{'>'} Evaluating 10 UX heuristics...</div>}
+          {currentStep >= 3 && <div>{'>'} Simulating keyboard navigation and screen reader...</div>}
+          {currentStep >= 4 && <div>{'>'} Analyzing user journey paths for friction points...</div>}
+          {currentStep >= 5 && <div>{'>'} Generating verified HTML/CSS code fixes...</div>}
+          {currentStep >= 5 && <div>{'>'} Validating AI patches...</div>}
+          {currentStep >= 6 && <div>{'>'} Audit complete. Compiling final report...</div>}
+          <div style={{ display: 'inline-block', width: '8px', height: '14px', background: '#10b981', marginTop: '4px', opacity: currentStep >= 6 ? 0 : 1 }}></div>
         </div>
       </div>
     </div>

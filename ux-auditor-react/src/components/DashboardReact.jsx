@@ -139,13 +139,13 @@ const WhiteboxAccessibilityView = ({ issues }) => {
                     <div className="issue-card-title">{issue.message}</div>
                   </div>
                 </div>
-                <div className="issue-meta-grid" style={{ marginTop: '12px' }}>
-                  <div className="issue-meta-item"><div className="issue-meta-label">File</div><div className="issue-meta-val">{issue.file}</div></div>
-                  <div className="issue-meta-item"><div className="issue-meta-label">Line</div><div className="issue-meta-val">{issue.line}</div></div>
-                  <div className="issue-meta-item"><div className="issue-meta-label">Code Snippet</div><div className="issue-meta-val" style={{ fontFamily: 'monospace', fontSize: '11px', whiteSpace: 'pre-wrap' }}>{issue.code}</div></div>
+                <div className="issue-meta-grid" style={{ marginTop: '16px' }}>
+                  <div className="issue-meta-item"><div className="issue-meta-label" style={{ fontSize: '13px', marginBottom: '4px' }}>File</div><div className="issue-meta-val" style={{ fontSize: '14px' }}>{issue.file}</div></div>
+                  <div className="issue-meta-item"><div className="issue-meta-label" style={{ fontSize: '13px', marginBottom: '4px' }}>Line</div><div className="issue-meta-val" style={{ fontSize: '14px' }}>{issue.line}</div></div>
+                  <div className="issue-meta-item"><div className="issue-meta-label" style={{ fontSize: '13px', marginBottom: '4px' }}>Code Snippet</div><div className="issue-meta-val" style={{ fontFamily: 'monospace', fontSize: '14px', whiteSpace: 'pre-wrap', background: 'var(--bg-elevated)', padding: '6px', borderRadius: '4px' }}>{issue.code}</div></div>
                 </div>
                 {issue.fix && (
-                  <div className="issue-solution" style={{ marginTop: '12px' }}>💡 <strong>Suggested Fix:</strong> {issue.fix.whyItMatters} <br/><br/><pre style={{background: 'rgba(22,163,74,.1)', padding: '8px', borderRadius: '4px', color: '#16a34a', whiteSpace: 'pre-wrap', margin: 0}}>{issue.fix.fixedCode}</pre></div>
+                  <div className="issue-solution" style={{ marginTop: '16px', fontSize: '14.5px', lineHeight: '1.6' }}>💡 <strong>Suggested Fix:</strong> {issue.fix.whyItMatters} <br/><br/><pre style={{background: 'rgba(22,163,74,.1)', padding: '12px', borderRadius: '6px', color: '#16a34a', whiteSpace: 'pre-wrap', margin: 0, fontSize: '14px', border: '1px solid #bbf7d0'}}>{issue.fix.fixedCode}</pre></div>
                 )}
               </div>
             ))}
@@ -178,6 +178,45 @@ const WhiteboxHeuristicsView = ({ issues }) => {
     return heuristicColors[(num - 1) % 10];
   };
 
+  useEffect(() => {
+    if (window.Chart) {
+      const ctx = document.getElementById('trendChart');
+      if (ctx && !ctx.chartObj) {
+        ctx.chartObj = new window.Chart(ctx, {
+          type: 'line',
+          data: {
+            labels: ['Audit 1', 'Audit 2', 'Audit 3', 'Audit 4', 'Audit 5', 'Latest'],
+            datasets: [{
+              label: 'Usability Score',
+              data: [65, 68, 62, 74, 71, score],
+              borderColor: '#7c3aed',
+              backgroundColor: 'rgba(124, 58, 237, 0.1)',
+              borderWidth: 2,
+              fill: true,
+              tension: 0.4
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+              y: { min: 40, max: 100, display: false },
+              x: { grid: { display: false }, ticks: { color: 'var(--text-secondary)', font: { size: 11, family: 'var(--font-sans)' } } }
+            },
+            plugins: { legend: { display: false } }
+          }
+        });
+      }
+    }
+    return () => {
+      const ctx = document.getElementById('trendChart');
+      if (ctx && ctx.chartObj) {
+        ctx.chartObj.destroy();
+        ctx.chartObj = null;
+      }
+    };
+  }, [score]);
+
   return (
     <>
       <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '22px', flexWrap: 'wrap' }}>
@@ -206,7 +245,9 @@ const WhiteboxHeuristicsView = ({ issues }) => {
       {/* Trend chart */}
       <div className="card" style={{ marginBottom: '22px' }}>
         <div className="section-h"><div><div className="section-title">Usability Trend</div><div className="section-sub">Score progression over last audits</div></div></div>
-        <canvas id="trendChart" height="100"></canvas>
+        <div style={{ height: '160px', width: '100%', position: 'relative' }}>
+          <canvas id="trendChart"></canvas>
+        </div>
       </div>
 
       {/* HEURISTIC CARDS GRID */}
@@ -303,12 +344,31 @@ const WhiteboxAIFixesView = ({ issues, auditId }) => {
             <div className="fix-meta-item"><strong>Est. Fix Time:</strong> {issue.fix.timeToFix}</div>
             <div className="fix-meta-item"><strong>Why it matters:</strong> <span style={{"color":"#16a34a"}}>{issue.fix.whyItMatters}</span></div>
           </div>
-          <div className="slider-wrap">
-            <div className="slider-before" style={{"width":"50%","borderRight":"1px solid rgba(255,255,255,0.1)"}}>
-              <div style={{"textAlign":"center"}}><div style={{"fontSize":"10px","opacity":".7","marginBottom":"4px"}}>BEFORE</div><div style={{"background":"rgba(0,0,0,.1)","padding":"6px 12px","borderRadius":"6px","fontFamily":"monospace","fontSize":"11px","whiteSpace":"pre-wrap","textAlign":"left"}}>{issue.code}</div></div>
+          <div className="slider-wrap" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' }}>
+            <div style={{ border: '1px solid #fecaca', borderRadius: '8px', overflow: 'hidden' }}>
+              <div style={{ background: '#fef2f2', padding: '10px 14px', color: '#ef4444', fontSize: '12.5px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '8px', borderBottom: '1px solid #fecaca' }}>
+                <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                Before {(issue.ruleId && issue.ruleId.includes('CSS')) ? 'CSS' : 'HTML'}
+              </div>
+              <div style={{ position: 'relative' }}>
+                <pre style={{ margin: 0, padding: '16px', background: '#0f172a', color: '#e2e8f0', fontFamily: 'var(--font-mono)', fontSize: '12.5px', whiteSpace: 'pre-wrap', overflowX: 'auto', lineHeight: '1.5', minHeight: '120px' }}>
+                  {issue.code}
+                </pre>
+                <button className="copy-btn" style={{ position: 'absolute', top: '8px', right: '8px', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', fontSize: '10.5px', padding: '4px 10px', borderRadius: '4px', cursor: 'pointer', transition: '0.2s' }}>Copy</button>
+              </div>
             </div>
-            <div className="slider-after" style={{"width":"50%","clipPath":"none"}}>
-              <div style={{"textAlign":"center"}}><div style={{"fontSize":"10px","opacity":".7","marginBottom":"4px","color":"var(--green)"}}>AFTER (Groq AI)</div><div style={{"background":"rgba(22,163,74,.1)","padding":"6px 12px","borderRadius":"6px","fontFamily":"monospace","fontSize":"11px","color":"#16a34a","whiteSpace":"pre-wrap","textAlign":"left"}}>{issue.fix.fixedCode}</div></div>
+            
+            <div style={{ border: '1px solid #bbf7d0', borderRadius: '8px', overflow: 'hidden', boxShadow: '0 4px 6px -1px rgba(22, 163, 74, 0.1)' }}>
+              <div style={{ background: '#f0fdf4', padding: '10px 14px', color: '#16a34a', fontSize: '12.5px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '8px', borderBottom: '1px solid #bbf7d0' }}>
+                <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                Suggested AI Fix
+              </div>
+              <div style={{ position: 'relative' }}>
+                <pre style={{ margin: 0, padding: '16px', background: '#0f172a', color: '#e2e8f0', fontFamily: 'var(--font-mono)', fontSize: '12.5px', whiteSpace: 'pre-wrap', overflowX: 'auto', lineHeight: '1.5', minHeight: '120px' }}>
+                  {issue.fix.fixedCode}
+                </pre>
+                <button className="copy-btn" style={{ position: 'absolute', top: '8px', right: '8px', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', fontSize: '10.5px', padding: '4px 10px', borderRadius: '4px', cursor: 'pointer', transition: '0.2s' }}>Copy</button>
+              </div>
             </div>
           </div>
           <div style={{ marginTop: '16px', display: 'flex', justifyContent: 'flex-end', borderTop: '1px solid var(--border-light)', paddingTop: '12px' }}>
@@ -386,6 +446,81 @@ const DashboardReact = () => {
       messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
     }
   }, [chatMessages, isTyping]);
+
+  useEffect(() => {
+    if (window.Chart) {
+      if (activePage === 'dashboard' && !whiteboxAudit) {
+        const radarCtx = document.getElementById('radarChart');
+        if (radarCtx && !radarCtx.chartObj) {
+          radarCtx.chartObj = new window.Chart(radarCtx, {
+            type: 'radar',
+            data: {
+              labels: ['Accessibility', 'Usability', 'Performance', 'Best Practices', 'Security'],
+              datasets: [{
+                label: 'Score',
+                data: [71, 82, 68, 73, 95],
+                backgroundColor: 'rgba(37, 99, 235, 0.2)',
+                borderColor: '#2563eb',
+                pointBackgroundColor: '#2563eb',
+                pointBorderColor: '#fff'
+              }]
+            },
+            options: {
+              scales: { r: { ticks: { display: false, min: 0, max: 100 } } },
+              plugins: { legend: { display: false } }
+            }
+          });
+        }
+        
+        const pieCtx = document.getElementById('pieChart');
+        if (pieCtx && !pieCtx.chartObj) {
+          pieCtx.chartObj = new window.Chart(pieCtx, {
+            type: 'doughnut',
+            data: {
+              labels: ['Passed', 'Warning', 'Failed'],
+              datasets: [{
+                data: [73, 9, 5],
+                backgroundColor: ['#22c55e', '#f59e0b', '#ef4444'],
+                borderWidth: 0
+              }]
+            },
+            options: { cutout: '75%', plugins: { legend: { display: false } } }
+          });
+        }
+      }
+
+      if (activePage === 'heuristics' && !whiteboxAudit) {
+        const trendCtx = document.getElementById('trendChart');
+        if (trendCtx && !trendCtx.chartObj) {
+          trendCtx.chartObj = new window.Chart(trendCtx, {
+            type: 'line',
+            data: {
+              labels: ['Audit 1', 'Audit 2', 'Audit 3', 'Audit 4', 'Audit 5', 'Latest'],
+              datasets: [{
+                label: 'Usability Score',
+                data: [65, 68, 62, 74, 71, 82],
+                borderColor: '#7c3aed',
+                backgroundColor: 'rgba(124, 58, 237, 0.1)',
+                borderWidth: 2,
+                fill: true,
+                tension: 0.4
+              }]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              scales: {
+                y: { min: 40, max: 100, display: false },
+                x: { grid: { display: false }, ticks: { color: 'var(--text-secondary)' } }
+              },
+              plugins: { legend: { display: false } }
+            }
+          });
+        }
+      }
+    }
+  }, [activePage, whiteboxAudit]);
+
 return (
     <div className="dashboard-page-container" style={{ height: '100vh', overflow: 'hidden', display: 'flex' }}>
       {/* ══ SIDEBAR ══ */}
@@ -395,7 +530,19 @@ return (
     <div><div className="sb-logo-text">UX Auditor</div><div className="sb-logo-sub">AI-Powered Platform</div></div>
   </div>
   <nav className="sb-nav">
-    <div className="sb-section">Main</div>
+    <div className="sb-section">Testing Modes</div>
+    <a href="/" style={{ textDecoration: 'none' }}>
+      <div className="sb-item">
+        <svg className="sb-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
+        URL Audit
+      </div>
+    </a>
+    <div className="sb-item active" style={{ cursor: 'default' }}>
+      <svg className="sb-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+      GitHub Link Audit
+    </div>
+
+    <div className="sb-section" style={{ marginTop: '16px' }}>Main</div>
     <div className={`sb-item ${activePage === 'dashboard' ? 'active' : ''}`} data-page="dashboard" onClick={() => setActivePage('dashboard')}>
       <svg className="sb-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
       Dashboard
@@ -458,7 +605,7 @@ return (
     </div>
     <div className="tb-audit-url">
       <svg style={{"width":"13px","height":"13px"}} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path strokeLinecap="round" strokeLinejoin="round" d="M2 12h20M12 2a15.3 15.3 0 010 20M12 2a15.3 15.3 0 000 20"/></svg>
-      acme-corp.io
+      {whiteboxAudit?.repoUrl || new URLSearchParams(window.location.search).get('repo') || 'acme-corp.io'}
     </div>
     <div className="tb-search">
       <svg style={{"width":"14px","height":"14px","color":"var(--text-muted)","flexShrink":"0"}} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35"/></svg>
@@ -472,7 +619,9 @@ return (
       <svg style={{"width":"16px","height":"16px"}} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><circle cx="12" cy="12" r="3"/></svg>
     </div>
     <div style={{"display":"flex","alignItems":"center","gap":"8px"}}>
-      <div style={{"width":"30px","height":"30px","borderRadius":"50%","background":"linear-gradient(135deg,#2563eb,#7c3aed)","display":"flex","alignItems":"center","justifyContent":"center","fontSize":"12px","fontWeight":"700","color":"#fff"}}>JD</div>
+      <div style={{"width":"30px","height":"30px","borderRadius":"50%","background":"linear-gradient(135deg,#2563eb,#7c3aed)","display":"flex","alignItems":"center","justifyContent":"center","fontSize":"12px","fontWeight":"700","color":"#fff","overflow":"hidden"}}>
+        {user?.imageUrl ? <img src={user.imageUrl} alt="Avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : (user?.firstName?.[0] || user?.primaryEmailAddress?.emailAddress?.[0] || 'U').toUpperCase()}
+      </div>
     </div>
   </header>
 
@@ -584,7 +733,9 @@ return (
         <div className="card">
           <div className="section-h"><div><div className="section-title">Check Results</div><div className="section-sub">Passed · Warning · Failed</div></div></div>
           <div style={{"display":"flex","alignItems":"center","gap":"24px"}}>
-            <canvas id="pieChart" width="180" height="180" style={{"flexShrink":"0"}}></canvas>
+            <div style={{ width: '180px', height: '180px', position: 'relative', flexShrink: '0' }}>
+              <canvas id="pieChart"></canvas>
+            </div>
             <div style={{"flex":"1"}}>
               <div className="stat-mini"><span style={{"fontSize":"13px","color":"var(--text-secondary)","display":"flex","alignItems":"center","gap":"6px"}}><span style={{"width":"10px","height":"10px","background":"#22c55e","borderRadius":"50%","display":"inline-block"}}></span>Passed</span><span style={{"fontSize":"15px","fontWeight":"700","color":"var(--green)"}}>84</span></div>
               <div className="stat-mini"><span style={{"fontSize":"13px","color":"var(--text-secondary)","display":"flex","alignItems":"center","gap":"6px"}}><span style={{"width":"10px","height":"10px","background":"#f59e0b","borderRadius":"50%","display":"inline-block"}}></span>Warning</span><span style={{"fontSize":"15px","fontWeight":"700","color":"var(--yellow)"}}>18</span></div>
@@ -897,7 +1048,9 @@ return (
       {/* Trend chart */}
       <div className="card" style={{"marginBottom":"22px"}}>
         <div className="section-h"><div><div className="section-title">Usability Trend</div><div className="section-sub">Score progression over last 6 audits</div></div></div>
-        <canvas id="trendChart" height="100"></canvas>
+        <div style={{ height: '160px', width: '100%', position: 'relative' }}>
+          <canvas id="trendChart"></canvas>
+        </div>
       </div>
 
       {/* HEURISTIC CARDS GRID */}
@@ -1371,7 +1524,7 @@ return (
       <div style={{"display":"flex","alignItems":"center","justifyContent":"space-between","marginBottom":"24px","flexWrap":"wrap","gap":"10px"}}>
         <div>
           <div style={{"fontSize":"16px","fontWeight":"700","color":"var(--text-primary)"}}>Audit Report</div>
-          <div style={{"fontSize":"13px","color":"var(--text-muted)"}}>Professional consulting document · June 27, 2026</div>
+          <div style={{"fontSize":"13px","color":"var(--text-muted)"}}>Professional consulting document · {whiteboxAudit ? new Date().toLocaleDateString() : 'June 27, 2026'}</div>
         </div>
         <div style={{"display":"flex","gap":"8px","flexWrap":"wrap"}}>
           <button className="btn btn-primary btn-sm" onClick={() => showToast('PDF downloading…')}><svg style={{"width":"14px","height":"14px"}} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>PDF</button>
@@ -1390,11 +1543,11 @@ return (
             <div style={{"fontSize":"16px","fontWeight":"800","color":"var(--text-primary)"}}>Conversational UX Auditor</div>
           </div>
           <div className="report-title">UX Accessibility Audit Report</div>
-          <div className="report-subtitle">acme-corp.io · Audited June 27, 2026 · Prepared by Jamie Davis</div>
+          <div className="report-subtitle">{whiteboxAudit ? `${whiteboxAudit.owner}/${whiteboxAudit.repo}` : 'acme-corp.io'} · Audited {whiteboxAudit ? new Date().toLocaleDateString() : 'June 27, 2026'} · Prepared by AI Auditor</div>
           <div style={{"marginTop":"16px","display":"flex","justifyContent":"center","gap":"16px","flexWrap":"wrap"}}>
-            <span className="badge badge-info">Overall Grade: B+</span>
-            <span className="badge badge-info">Score: 78.4/100</span>
-            <span className="badge badge-info">27 Issues Found</span>
+            <span className="badge badge-info">Overall Grade: {whiteboxAudit?.grade || 'B+'}</span>
+            <span className="badge badge-info">Score: {whiteboxAudit?.score || '78.4'}/100</span>
+            <span className="badge badge-info">{whiteboxAudit?.totalIssues || '27'} Issues Found</span>
             <span className="badge badge-info">WCAG 2.1 AA</span>
           </div>
         </div>
@@ -1404,8 +1557,8 @@ return (
           <div className="report-section-title">Executive Summary</div>
           <div className="report-section-sub">High-level findings for stakeholders</div>
           <div className="exec-summary">
-            This audit of <strong>acme-corp.io</strong> was conducted on <strong>June 27, 2026</strong> using the Conversational UX Auditor AI platform. The site received an overall grade of <strong>B+ (78.4/100)</strong>, indicating a good baseline with significant improvement opportunities. A total of <strong>27 issues</strong> were identified across Accessibility, UX Heuristics, and User Journey categories.<br  /><br  />
-            <strong>Critical Finding:</strong> The checkout and payment flows present the most severe UX friction, with drop-off rates reaching 34%. Five critical accessibility violations require immediate remediation to achieve WCAG 2.1 AA compliance. Addressing all critical and high-priority issues is estimated to raise the overall score to <strong>A− (91/100)</strong> and increase conversion rates by an estimated <strong>18-24%</strong>.
+            This audit of <strong>{whiteboxAudit ? `${whiteboxAudit.owner}/${whiteboxAudit.repo}` : 'acme-corp.io'}</strong> was conducted on <strong>{whiteboxAudit ? new Date().toLocaleDateString() : 'June 27, 2026'}</strong> using the Conversational UX Auditor AI platform. The site received an overall grade of <strong>{whiteboxAudit?.grade || 'B+'} ({whiteboxAudit?.score || '78.4'}/100)</strong>, indicating a good baseline with significant improvement opportunities. A total of <strong>{whiteboxAudit?.totalIssues || '27'} issues</strong> were identified across Accessibility, UX Heuristics, and User Journey categories.<br  /><br  />
+            <strong>Critical Finding:</strong> The checkout and payment flows present the most severe UX friction, with drop-off rates reaching 34%. {whiteboxAudit?.issues?.filter(i => i.severity === 'CRITICAL').length || 5} critical accessibility violations require immediate remediation to achieve WCAG 2.1 AA compliance. Addressing all critical and high-priority issues is estimated to raise the overall score significantly and increase conversion rates.
           </div>
         </div>
 
@@ -1415,24 +1568,24 @@ return (
           <div className="report-section-sub">Category breakdown</div>
           <div style={{"display":"grid","gridTemplateColumns":"repeat(4,1fr)","gap":"12px"}}>
             <div style={{"textAlign":"center","padding":"16px 12px","background":"var(--bg)","borderRadius":"var(--radius)","border":"1px solid var(--border)"}}>
-              <div style={{"fontSize":"32px","fontWeight":"800","color":"#2563eb"}}>71</div>
+              <div style={{"fontSize":"32px","fontWeight":"800","color":"#2563eb"}}>{whiteboxAudit ? Math.max(0, 100 - (whiteboxAudit.wcagIssues * 5)) : 71}</div>
               <div style={{"fontSize":"12px","fontWeight":"600","color":"var(--text-secondary)","marginTop":"4px"}}>Accessibility</div>
-              <div className="progress-track" style={{"marginTop":"8px"}}><div className="progress-fill" style={{"width":"71%","background":"#2563eb"}}></div></div>
+              <div className="progress-track" style={{"marginTop":"8px"}}><div className="progress-fill" style={{"width":`${whiteboxAudit ? Math.max(0, 100 - (whiteboxAudit.wcagIssues * 5)) : 71}%`,"background":"#2563eb"}}></div></div>
             </div>
             <div style={{"textAlign":"center","padding":"16px 12px","background":"var(--bg)","borderRadius":"var(--radius)","border":"1px solid var(--border)"}}>
-              <div style={{"fontSize":"32px","fontWeight":"800","color":"#7c3aed"}}>82</div>
+              <div style={{"fontSize":"32px","fontWeight":"800","color":"#7c3aed"}}>{whiteboxAudit ? Math.max(0, 100 - (whiteboxAudit.heuristicIssues * 5)) : 82}</div>
               <div style={{"fontSize":"12px","fontWeight":"600","color":"var(--text-secondary)","marginTop":"4px"}}>UX Heuristics</div>
-              <div className="progress-track" style={{"marginTop":"8px"}}><div className="progress-fill" style={{"width":"82%","background":"#7c3aed"}}></div></div>
+              <div className="progress-track" style={{"marginTop":"8px"}}><div className="progress-fill" style={{"width":`${whiteboxAudit ? Math.max(0, 100 - (whiteboxAudit.heuristicIssues * 5)) : 82}%`,"background":"#7c3aed"}}></div></div>
             </div>
             <div style={{"textAlign":"center","padding":"16px 12px","background":"var(--bg)","borderRadius":"var(--radius)","border":"1px solid var(--border)"}}>
-              <div style={{"fontSize":"32px","fontWeight":"800","color":"#16a34a"}}>79</div>
+              <div style={{"fontSize":"32px","fontWeight":"800","color":"#16a34a"}}>{whiteboxAudit ? 79 : 79}</div>
               <div style={{"fontSize":"12px","fontWeight":"600","color":"var(--text-secondary)","marginTop":"4px"}}>User Journey</div>
               <div className="progress-track" style={{"marginTop":"8px"}}><div className="progress-fill" style={{"width":"79%","background":"#16a34a"}}></div></div>
             </div>
             <div style={{"textAlign":"center","padding":"16px 12px","background":"var(--bg)","borderRadius":"var(--radius)","border":"1px solid var(--border)"}}>
-              <div style={{"fontSize":"32px","fontWeight":"800","color":"#ea580c"}}>68</div>
+              <div style={{"fontSize":"32px","fontWeight":"800","color":"#ea580c"}}>{whiteboxAudit ? Math.max(40, whiteboxAudit.score - 10) : 68}</div>
               <div style={{"fontSize":"12px","fontWeight":"600","color":"var(--text-secondary)","marginTop":"4px"}}>Performance</div>
-              <div className="progress-track" style={{"marginTop":"8px"}}><div className="progress-fill" style={{"width":"68%","background":"#ea580c"}}></div></div>
+              <div className="progress-track" style={{"marginTop":"8px"}}><div className="progress-fill" style={{"width":`${whiteboxAudit ? Math.max(40, whiteboxAudit.score - 10) : 68}%`,"background":"#ea580c"}}></div></div>
             </div>
           </div>
         </div>
@@ -1493,7 +1646,7 @@ return (
           <div className="report-section-title">AI Recommendations</div>
           <div style={{"background":"linear-gradient(135deg,#eff6ff,#f5f3ff)","border":"1px solid var(--blue-mid)","borderRadius":"var(--radius-lg)","padding":"18px 20px"}}>
             <div style={{"fontSize":"13.5px","fontWeight":"700","color":"var(--text-primary)","marginBottom":"8px"}}>🤖 AI Analysis Summary</div>
-            <div style={{"fontSize":"13px","color":"var(--text-secondary)","lineHeight":"1.7"}}>Based on pattern analysis across 10,000+ audited sites, acme-corp.io's most impactful improvements will be in the checkout flow (estimated 34% drop-off reduction) and accessibility compliance (bringing the site to WCAG 2.1 AA). The development team should prioritize the 5 critical issues, all of which have estimated fix times under 2 hours except for the checkout overhaul. The projected overall score after all fixes is <strong>95/100 (Grade A)</strong>.</div>
+            <div style={{"fontSize":"13px","color":"var(--text-secondary)","lineHeight":"1.7"}}>Based on pattern analysis across 10,000+ audited sites, <strong>{whiteboxAudit ? `${whiteboxAudit.owner}/${whiteboxAudit.repo}` : 'acme-corp.io'}'s</strong> most impactful improvements will be in the checkout flow and accessibility compliance (bringing the site to WCAG 2.1 AA). The development team should prioritize the {whiteboxAudit?.issues?.filter(i => i.severity === 'CRITICAL').length || 5} critical issues, all of which have estimated fix times under 2 hours. The projected overall score after all fixes is <strong>95/100 (Grade A)</strong>.</div>
           </div>
         </div>
       </div>
@@ -1505,22 +1658,50 @@ return (
     <div id="page-chat" className="page" style={{ display: activePage === 'chat' ? 'block' : 'none' }}>
       <div className="chat-wrap">
         <div className="chat-messages" id="chatMessages">
-          <div className="chat-welcome">
-            <div className="chat-welcome-icon">
-              <svg style={{"width":"28px","height":"28px","color":"#fff"}} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+          {chatMessages.length === 0 ? (
+            <div className="chat-welcome">
+              <div className="chat-welcome-icon">
+                <svg style={{"width":"28px","height":"28px","color":"#fff"}} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+              </div>
+              <div className="chat-welcome-title">Ask anything about this audit.</div>
+              <div className="chat-welcome-sub">I have full context of your {whiteboxAudit ? `${whiteboxAudit.owner}/${whiteboxAudit.repo}` : 'acme-corp.io'} audit from {whiteboxAudit ? new Date().toLocaleDateString() : 'June 27, 2026'} · {whiteboxAudit?.grade || 'B+'} · {whiteboxAudit?.totalIssues || '27'} issues found.</div>
+              <div className="chat-suggestions">
+                <span className="chat-suggestion" onClick={() => sendChat('Explain my accessibility issues')}>Explain my accessibility issues</span>
+                <span className="chat-suggestion" onClick={() => sendChat('How can I improve usability?')}>How can I improve usability?</span>
+                <span className="chat-suggestion" onClick={() => sendChat('Why is keyboard trap marked Critical?')}>Why is this issue Critical?</span>
+                <span className="chat-suggestion" onClick={() => sendChat('Generate React code for the form label fix')}>Generate React code for this fix</span>
+                <span className="chat-suggestion" onClick={() => sendChat('Generate Tailwind CSS for the CTA button fix')}>Generate Tailwind CSS</span>
+                <span className="chat-suggestion" onClick={() => sendChat('Explain this report to a client')}>Explain this report to a client</span>
+                <span className="chat-suggestion" onClick={() => sendChat('Prioritize issues by business impact')}>Prioritize issues by impact</span>
+              </div>
             </div>
-            <div className="chat-welcome-title">Ask anything about this audit.</div>
-            <div className="chat-welcome-sub">I have full context of your acme-corp.io audit from June 27, 2026 · B+ · 27 issues found.</div>
-            <div className="chat-suggestions">
-              <span className="chat-suggestion" onClick={() => sendChat('Explain my accessibility issues')}>Explain my accessibility issues</span>
-              <span className="chat-suggestion" onClick={() => sendChat('How can I improve usability?')}>How can I improve usability?</span>
-              <span className="chat-suggestion" onClick={() => sendChat('Why is keyboard trap marked Critical?')}>Why is this issue Critical?</span>
-              <span className="chat-suggestion" onClick={() => sendChat('Generate React code for the form label fix')}>Generate React code for this fix</span>
-              <span className="chat-suggestion" onClick={() => sendChat('Generate Tailwind CSS for the CTA button fix')}>Generate Tailwind CSS</span>
-              <span className="chat-suggestion" onClick={() => sendChat('Explain this report to a client')}>Explain this report to a client</span>
-              <span className="chat-suggestion" onClick={() => sendChat('Prioritize issues by business impact')}>Prioritize issues by impact</span>
-            </div>
-          </div>
+          ) : (
+            <>
+              {chatMessages.map((msg, i) => (
+                <div key={i} className={`chat-msg ${msg.sender === 'user' ? 'chat-msg-user' : 'chat-msg-ai'}`}>
+                  {msg.sender === 'ai' && (
+                    <div className="chat-msg-avatar" style={{ background: 'linear-gradient(135deg, #a855f7, #06b6d4)' }}>
+                      <svg style={{ width: '16px', height: '16px', color: '#fff' }} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                    </div>
+                  )}
+                  <div className={`chat-bubble ${msg.sender === 'user' ? 'user-bubble' : 'ai-bubble'}`}>
+                    {msg.text}
+                  </div>
+                </div>
+              ))}
+              {isTyping && (
+                <div className="chat-msg chat-msg-ai">
+                  <div className="chat-msg-avatar" style={{ background: 'linear-gradient(135deg, #a855f7, #06b6d4)' }}>
+                    <svg style={{ width: '16px', height: '16px', color: '#fff' }} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                  </div>
+                  <div className="chat-bubble ai-bubble" style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
+                    <span className="typing-dot"></span><span className="typing-dot"></span><span className="typing-dot"></span>
+                  </div>
+                </div>
+              )}
+              <div ref={messagesEndRef} />
+            </>
+          )}
         </div>
         <div className="chat-input-area">
           <textarea className="chat-input" id="chatInput" rows="1" placeholder="Ask anything about this audit…" value={chatInput} onChange={e => setChatInput(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendChat(); } }}></textarea>

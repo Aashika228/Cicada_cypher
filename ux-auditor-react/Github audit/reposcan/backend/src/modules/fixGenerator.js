@@ -24,8 +24,15 @@ function parseFixResponse(text) {
   try {
     const cleaned = text.replace(/```json\n?|\n?```/g, '').trim();
     const parsed = JSON.parse(cleaned);
+    
+    let fixedCodeStr = parsed.fixedCode || '';
+    if (typeof fixedCodeStr === 'object') {
+      // Sometimes AI hallucinates and returns a diff object instead of a string
+      fixedCodeStr = Object.values(fixedCodeStr).join('\\n');
+    }
+
     return {
-      fixedCode: parsed.fixedCode || '',
+      fixedCode: String(fixedCodeStr),
       whyItMatters: parsed.whyItMatters || '',
       timeToFix: parsed.timeToFix || '5 minutes',
     };

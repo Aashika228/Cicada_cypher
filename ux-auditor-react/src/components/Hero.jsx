@@ -54,19 +54,31 @@ const Hero = ({ onStartAudit }) => {
 
       {/* Testing Modes */}
       {testingMode === null && (
-        <div className="hero__testing-modes animate-in" style={{ display: 'flex', gap: '16px', justifyContent: 'center', marginBottom: '32px' }}>
+        <div className="hero__testing-modes animate-in" style={{ display: 'flex', gap: '24px', justifyContent: 'center', marginBottom: '32px' }}>
           <SignedOut>
-            <SignInButton mode="modal" forceRedirectUrl="/?mode=whitebox">
-              <button className="btn btn--primary" style={{ padding: '12px 24px', fontSize: '15px' }}>Whitebox Testing</button>
-            </SignInButton>
-            <SignInButton mode="modal" forceRedirectUrl="/?mode=blackbox">
-              <button className="btn btn--primary" style={{ padding: '12px 24px', fontSize: '15px' }}>Blackbox Testing</button>
-            </SignInButton>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
+              <SignInButton mode="modal" forceRedirectUrl="/?mode=whitebox">
+                <button className="btn btn--primary" style={{ padding: '12px 24px', fontSize: '15px', width: '200px' }}>GitHub Link Audit</button>
+              </SignInButton>
+              <span style={{ fontSize: '12.5px', color: 'var(--text-muted)' }}>Deep scan GitHub repos</span>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
+              <SignInButton mode="modal" forceRedirectUrl="/?mode=blackbox">
+                <button className="btn btn--primary" style={{ padding: '12px 24px', fontSize: '15px', width: '200px' }}>URL Audit</button>
+              </SignInButton>
+              <span style={{ fontSize: '12.5px', color: 'var(--text-muted)' }}>Analyze public URLs</span>
+            </div>
           </SignedOut>
           
           <SignedIn>
-            <button className="btn btn--primary" onClick={() => setTestingMode('whitebox')} style={{ padding: '12px 24px', fontSize: '15px' }}>Whitebox Testing</button>
-            <button className="btn btn--primary" onClick={() => setTestingMode('blackbox')} style={{ padding: '12px 24px', fontSize: '15px' }}>Blackbox Testing</button>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
+              <button className="btn btn--primary" onClick={() => setTestingMode('whitebox')} style={{ padding: '12px 24px', fontSize: '15px', width: '200px' }}>GitHub Link Audit</button>
+              <span style={{ fontSize: '12.5px', color: 'var(--text-muted)' }}>Deep scan GitHub repos</span>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
+              <button className="btn btn--primary" onClick={() => setTestingMode('blackbox')} style={{ padding: '12px 24px', fontSize: '15px', width: '200px' }}>URL Audit</button>
+              <span style={{ fontSize: '12.5px', color: 'var(--text-muted)' }}>Analyze public URLs</span>
+            </div>
           </SignedIn>
         </div>
       )}
@@ -139,23 +151,23 @@ const Hero = ({ onStartAudit }) => {
       {/* Trust stats */}
       <div className="hero__stats animate-in">
         <div className="hero__stat">
-          <span className="hero__stat-number" data-count="0">0%</span>
+          <span className="hero__stat-number" data-count="7">7</span>
           <span className="hero__stat-label">Sites Audited</span>
         </div>
         <div className="hero__stat-divider"></div>
         <div className="hero__stat">
-          <span className="hero__stat-number" data-count="0">0%</span>
+          <span className="hero__stat-number" data-count="1248">1,248</span>
           <span className="hero__stat-label">Issues Found</span>
         </div>
         <div className="hero__stat-divider"></div>
         <div className="hero__stat">
-          <span className="hero__stat-number" data-count="0">0%</span>
+          <span className="hero__stat-number" data-count="1152">1,152</span>
           <span className="hero__stat-label">Fixes Generated</span>
         </div>
         <div className="hero__stat-divider"></div>
         <div className="hero__stat">
-          <span className="hero__stat-number" data-count="0">0%</span>
-          <span className="hero__stat-label">% Accuracy</span>
+          <span className="hero__stat-number" data-count="98">98%</span>
+          <span className="hero__stat-label">Accuracy</span>
         </div>
       </div>
 

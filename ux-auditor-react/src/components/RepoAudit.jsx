@@ -46,26 +46,33 @@ function IssueCard({ issue }) {
 
       <p style={{ fontSize: '13.5px', color: 'var(--text-secondary)', marginBottom: '16px' }}>{issue.message}</p>
 
-      <div style={{ display: 'flex', gap: '8px', marginBottom: '10px' }}>
-        <button
-          type="button"
-          onClick={() => setShowFixed(false)}
-          className={`btn ${!showFixed ? 'btn-primary' : 'btn-secondary'} btn-sm`}
-        >
-          Before
-        </button>
-        <button
-          type="button"
-          onClick={() => setShowFixed(true)}
-          className={`btn ${showFixed ? 'btn-primary' : 'btn-secondary'} btn-sm`}
-        >
-          After
-        </button>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' }}>
+        <div style={{ border: '1px solid #fecaca', borderRadius: '8px', overflow: 'hidden' }}>
+          <div style={{ background: '#fef2f2', padding: '10px 14px', color: '#ef4444', fontSize: '12.5px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '8px', borderBottom: '1px solid #fecaca' }}>
+            <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            Before {(issue.ruleId && issue.ruleId.includes('CSS')) ? 'CSS' : 'HTML'}
+          </div>
+          <div style={{ position: 'relative' }}>
+            <pre style={{ margin: 0, padding: '16px', background: '#0f172a', color: '#e2e8f0', fontFamily: 'var(--font-mono)', fontSize: '12.5px', whiteSpace: 'pre-wrap', overflowX: 'auto', lineHeight: '1.5', minHeight: '120px' }}>
+              {issue.code}
+            </pre>
+            <button className="copy-btn" style={{ position: 'absolute', top: '8px', right: '8px', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', fontSize: '10.5px', padding: '4px 10px', borderRadius: '4px', cursor: 'pointer', transition: '0.2s' }}>Copy</button>
+          </div>
+        </div>
+        
+        <div style={{ border: '1px solid #bbf7d0', borderRadius: '8px', overflow: 'hidden', boxShadow: '0 4px 6px -1px rgba(22, 163, 74, 0.1)' }}>
+          <div style={{ background: '#f0fdf4', padding: '10px 14px', color: '#16a34a', fontSize: '12.5px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '8px', borderBottom: '1px solid #bbf7d0' }}>
+            <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            Suggested {(issue.ruleId && issue.ruleId.includes('CSS')) ? 'CSS' : 'HTML'}
+          </div>
+          <div style={{ position: 'relative' }}>
+            <pre style={{ margin: 0, padding: '16px', background: '#0f172a', color: '#e2e8f0', fontFamily: 'var(--font-mono)', fontSize: '12.5px', whiteSpace: 'pre-wrap', overflowX: 'auto', lineHeight: '1.5', minHeight: '120px' }}>
+              {issue.fix?.fixedCode || issue.suggestedFix || 'No fix available'}
+            </pre>
+            <button className="copy-btn" style={{ position: 'absolute', top: '8px', right: '8px', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', fontSize: '10.5px', padding: '4px 10px', borderRadius: '4px', cursor: 'pointer', transition: '0.2s' }}>Copy</button>
+          </div>
+        </div>
       </div>
-
-      <pre className="code-block" style={{ marginBottom: '12px', whiteSpace: 'pre-wrap' }}>
-        {showFixed ? (issue.fix?.fixedCode || issue.suggestedFix || 'No fix available') : issue.code}
-      </pre>
 
       {issue.fix && (
         <div className="grid-2">
@@ -130,6 +137,78 @@ export default function RepoAudit({ audit, setAudit }) {
     }
   }, []);
 
+  useEffect(() => {
+    if (audit && audit.status === 'completed' && window.Chart) {
+      const radarCtx = document.getElementById('radarChart');
+      if (radarCtx && !radarCtx.chartObj) {
+        radarCtx.chartObj = new window.Chart(radarCtx, {
+          type: 'radar',
+          data: {
+            labels: ['Accessibility', 'Usability', 'Performance', 'Best Practices', 'Security'],
+            datasets: [{
+              label: 'Score',
+              data: [
+                Math.max(0, 100 - (audit.wcagIssues * 5)),
+                Math.max(0, 100 - (audit.heuristicIssues * 5)),
+                Math.max(40, audit.score - 10),
+                audit.score,
+                95
+              ],
+              backgroundColor: 'rgba(37, 99, 235, 0.2)',
+              borderColor: '#2563eb',
+              pointBackgroundColor: '#2563eb',
+              pointBorderColor: '#fff',
+              pointHoverBackgroundColor: '#fff',
+              pointHoverBorderColor: '#2563eb'
+            }]
+          },
+          options: {
+            scales: {
+              r: {
+                angleLines: { color: 'rgba(0,0,0,0.1)' },
+                grid: { color: 'rgba(0,0,0,0.1)' },
+                pointLabels: { color: 'var(--text-secondary)', font: { size: 11, family: 'var(--font-sans)' } },
+                ticks: { display: false, min: 0, max: 100 }
+              }
+            },
+            plugins: { legend: { display: false } }
+          }
+        });
+      }
+
+      const pieCtx = document.getElementById('pieChart');
+      if (pieCtx && !pieCtx.chartObj) {
+        pieCtx.chartObj = new window.Chart(pieCtx, {
+          type: 'doughnut',
+          data: {
+            labels: ['Passed', 'Warning', 'Failed'],
+            datasets: [{
+              data: [
+                Math.max(0, 100 - audit.totalIssues),
+                audit.issues.filter(i => i.severity === 'MEDIUM' || i.severity === 'LOW').length,
+                audit.issues.filter(i => i.severity === 'CRITICAL' || i.severity === 'HIGH').length
+              ],
+              backgroundColor: ['#22c55e', '#f59e0b', '#ef4444'],
+              borderWidth: 0,
+              hoverOffset: 4
+            }]
+          },
+          options: {
+            cutout: '75%',
+            plugins: { legend: { display: false } }
+          }
+        });
+      }
+    }
+    
+    return () => {
+      const radarCtx = document.getElementById('radarChart');
+      if (radarCtx && radarCtx.chartObj) { radarCtx.chartObj.destroy(); radarCtx.chartObj = null; }
+      const pieCtx = document.getElementById('pieChart');
+      if (pieCtx && pieCtx.chartObj) { pieCtx.chartObj.destroy(); pieCtx.chartObj = null; }
+    };
+  }, [audit]);
+
   const [typeFilter, setTypeFilter] = useState('ALL');
   const [severityFilter, setSeverityFilter] = useState('ALL');
   const [fileTypeFilter, setFileTypeFilter] = useState('ALL');
@@ -147,7 +226,8 @@ export default function RepoAudit({ audit, setAudit }) {
 
   const filteredIssues = useMemo(() => {
     if (!audit?.issues) return [];
-    return audit.issues.filter((issue) => {
+    
+    const filtered = audit.issues.filter((issue) => {
       if (typeFilter !== 'ALL' && issue.type.toUpperCase() !== typeFilter) return false;
       if (severityFilter !== 'ALL' && issue.severity !== severityFilter) return false;
       if (fileTypeFilter !== 'ALL') {
@@ -156,6 +236,18 @@ export default function RepoAudit({ audit, setAudit }) {
       }
       return true;
     });
+
+    // Deduplicate by ruleId so the user doesn't see the exact same issue repeated 10 times
+    const uniqueIssues = [];
+    const seenRules = new Set();
+    for (const issue of filtered) {
+      if (!seenRules.has(issue.ruleId)) {
+        seenRules.add(issue.ruleId);
+        uniqueIssues.push(issue);
+      }
+    }
+    
+    return uniqueIssues;
   }, [audit, typeFilter, severityFilter, fileTypeFilter]);
 
   async function runAudit() {
@@ -257,14 +349,29 @@ export default function RepoAudit({ audit, setAudit }) {
       )}
 
       {loading && (
-        <div className="card" style={{ marginBottom: '24px' }}>
-          <h2 className="section-title" style={{ textAlign: 'center', marginBottom: '20px' }}>Analyzing Codebase...</h2>
-          <div className="progress-track">
-            <div className="progress-fill" style={{ width: `${((currentStep + 1) / STEPS.length) * 100}%` }}></div>
+        <div className="card" style={{ marginBottom: '24px', background: '#0a0a0a', color: '#00ffcc', fontFamily: 'var(--font-mono)', padding: '24px', border: '1px solid #333' }}>
+          <div style={{ display: 'flex', gap: '8px', marginBottom: '20px' }}>
+             <div style={{width:'12px', height:'12px', borderRadius:'50%', background:'#ff4757'}}></div>
+             <div style={{width:'12px', height:'12px', borderRadius:'50%', background:'#ffa502'}}></div>
+             <div style={{width:'12px', height:'12px', borderRadius:'50%', background:'#2ed573'}}></div>
           </div>
-          <div style={{ marginTop: '12px', fontSize: '13px', color: 'var(--text-secondary)', textAlign: 'center' }}>
-            {STEPS[currentStep]}...
+          <div style={{ fontSize: '14px', lineHeight: '1.8' }}>
+            {STEPS.slice(0, currentStep + 1).map((step, idx) => (
+              <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <span style={{ color: '#636e72' }}>[{new Date().toLocaleTimeString([], { hour12: false })}]</span>
+                <span style={{ color: '#ff00ff' }}>~/ai/auditor</span>
+                <span style={{ color: '#00ffcc' }}>$</span>
+                <span style={{ color: idx === currentStep ? '#ffffff' : '#00ffcc' }}>{step}...</span>
+                {idx < currentStep && <span style={{ color: '#2ed573', marginLeft: 'auto' }}>[DONE]</span>}
+                {idx === currentStep && (
+                  <span style={{ width: '8px', height: '16px', background: '#fff', display: 'inline-block', animation: 'blink 1s step-end infinite', marginLeft: '4px', position: 'relative', top: '2px' }}></span>
+                )}
+              </div>
+            ))}
           </div>
+          <style>{`
+            @keyframes blink { 50% { opacity: 0; } }
+          `}</style>
         </div>
       )}
 
@@ -368,7 +475,9 @@ export default function RepoAudit({ audit, setAudit }) {
             <div className="card">
               <div className="section-h"><div><div className="section-title">Check Results</div><div className="section-sub">Passed · Warning · Failed</div></div></div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
-                <canvas id="pieChart" width="180" height="180" style={{ flexShrink: '0' }}></canvas>
+                <div style={{ width: '180px', height: '180px', position: 'relative', flexShrink: '0' }}>
+                  <canvas id="pieChart"></canvas>
+                </div>
                 <div style={{ flex: '1' }}>
                   <div className="stat-mini"><span style={{ fontSize: '13px', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '6px' }}><span style={{ width: '10px', height: '10px', background: '#22c55e', borderRadius: '50%', display: 'inline-block' }}></span>Passed</span><span style={{ fontSize: '15px', fontWeight: '700', color: 'var(--green)' }}>{Math.max(0, 100 - audit.totalIssues)}</span></div>
                   <div className="stat-mini"><span style={{ fontSize: '13px', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '6px' }}><span style={{ width: '10px', height: '10px', background: '#f59e0b', borderRadius: '50%', display: 'inline-block' }}></span>Warning</span><span style={{ fontSize: '15px', fontWeight: '700', color: 'var(--yellow)' }}>{filteredIssues.filter(i => i.severity === 'MEDIUM' || i.severity === 'LOW').length}</span></div>
