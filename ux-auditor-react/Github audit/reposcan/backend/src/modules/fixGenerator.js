@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
-const GROQ_MODEL = process.env.GROQ_MODEL || 'llama-3.3-70b-versatile';
+const GROQ_MODEL = process.env.GROQ_MODEL || 'llama-3.1-8b-instant';
 
 function buildPrompt(issue) {
   const rule = issue.wcagId || issue.heuristicId || issue.ruleId;
@@ -13,6 +13,8 @@ Line: ${issue.line}
 Rule: ${rule} — ${ruleName}
 Problem: ${issue.message}
 Current code: ${issue.code}
+
+CRITICAL: For "fixedCode", you MUST return the actual, fully modified code snippet that replaces the current code. DO NOT return text instructions (e.g., do not say "Add lang='en'"). Return the EXACT CODE (e.g., "<html lang='en'>...").
 
 Return JSON only with no markdown fencing:
 {"fixedCode":"...","whyItMatters":"...","timeToFix":"..."}`;
@@ -38,8 +40,8 @@ function parseFixResponse(text) {
 
 function fallbackFix(issue) {
   return {
-    fixedCode: issue.suggestedFix || issue.code,
-    whyItMatters: `Addressing ${issue.wcagId || issue.heuristicId} improves accessibility and user experience.`,
+    fixedCode: issue.code, // Return original code so we don't break the file with text instructions
+    whyItMatters: `(AI Rate Limited) ${issue.message}. Manually apply this fix: ${issue.suggestedFix || 'Fix required.'}`,
     timeToFix: issue.severity === 'CRITICAL' ? '15 minutes' : issue.severity === 'HIGH' ? '10 minutes' : '5 minutes',
   };
 }

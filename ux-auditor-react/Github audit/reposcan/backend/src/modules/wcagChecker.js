@@ -314,7 +314,7 @@ function checkLine(file, line) {
   }
 
   // WCAG 3.1.1 — html tag missing lang attribute
-  if (line.elementName === 'html' && !attrs.lang) {
+  if (line.elementName === 'html' && !line.rawContent.trim().startsWith('</') && !attrs.lang) {
     issues.push(
       createIssue(
         path,
